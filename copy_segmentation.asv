@@ -46,8 +46,8 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
         tic
         
         [c(1), c(2), c(3)] = ind2sub(num_chunks_to_write, n);              
-        chunk_coords = [((c-1).*write_size) + write_coords(:,1); ...
-            min([c.*write_size + write_coords(:,2); imSz])];
+        chunk_coords = [((c-1).*write_size) + write_coords(1,:); ...
+            min([c.*write_size + write_coords(1,:); imSz])];
                 
         
         chunk_im = get_omni_coords(fid, chunk_coords, max_chunk_size, imSz);
@@ -86,19 +86,30 @@ end
 function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
     chunks_to_read = [1+floor((chunk_coords(1,:)-1)./max_chunk_size); ...
         ceil((chunk_coords(2,:))./max_chunk_size)];
-    offset = chunk_coords(1,:) - chunks_to_read(1,:).*max_chunk_size - 1;
+%     
+    disp(chunk_coords);
+%     disp(max_chunk_size);
+%     disp(chunks_to_read);
+    
+    
+    offset = chunk_coords(1,:) - (chunks_to_read(1,:)-1).*max_chunk_size - 1;
+    out_Sz = chunk_coords(2,:) - chunk_coords(1,:) + 1;
     out_im = zeros((chunks_to_read(2,:)-chunks_to_read(1,:)+1).*max_chunk_size);
     
     for x = chunks_to_read(1,1):chunks_to_read(2,1)
         for y = chunks_to_read(1,2):chunks_to_read(2,2)
             for z = chunks_to_read(1,3):chunks_to_read(2,3)
                 chunk_im = get_omni_chunk(fid, ([x y z]-1).*max_chunk_size + 1, max_chunk_size, vol_size);
-                out_i
+                out_im(x-chunks_to_read(1,1) + (1:size(chunk_im,1)), ...
+                    y-chunks_to_read(1,2) + (1:size(chunk_im,2)), ...
+                    z-chunks_to_read(1,3) + (1:size(chunk_im,3))) = chunk_im;
             end
         end
     end
     
-    
+    disp(out_Sz)
+    disp(offset)
+    out_im = out_im(offset(1) + (1:out_Sz(1)), offset(2) + (1:out_Sz(2)), offset(3) + (1:out_Sz(3)));
 end
 
 function chunk_im = get_omni_chunk(fid, chunk_start, chunk_size, vol_size)
@@ -129,7 +140,8 @@ function chunk_im = get_omni_chunk(fid, chunk_start, chunk_size, vol_size)
         bytes_per_cube * (chunk_num(1)-1);
     
     fseek(fid, byte_pos, 'bof');
-    fread(fid, prod(chunk_size), 'uint32');
+    chunk_im = fread(fid, prod(chunk_size), 'uint32');
+    chunk_im = reshape(chunk_im, chunk_size);
     
 end
     

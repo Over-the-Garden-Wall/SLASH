@@ -39,7 +39,11 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
     disp(max_chunk_size);
     
     
+    
     num_chunks_to_write = ceil((1+(write_coords(2,:) - write_coords(1,:)))./write_size);
+    
+    disp(write_coords)
+    disp(num_chunks_to_write);
     
     for n = 1:prod(num_chunks_to_write)
     
@@ -49,6 +53,7 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
         chunk_coords = [((c-1).*write_size) + write_coords(1,:); ...
             min([c.*write_size + write_coords(1,:); imSz])];
                 
+        disp(chunk_coords);
         
         chunk_im = get_omni_coords(fid, chunk_coords, max_chunk_size, imSz);
 
@@ -87,7 +92,7 @@ function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
     chunks_to_read = [1+floor((chunk_coords(1,:)-1)./max_chunk_size); ...
         ceil((chunk_coords(2,:))./max_chunk_size)];
 %     
-%     disp(chunk_coords);
+    disp(chunk_coords);
 %     disp(max_chunk_size);
 %     disp(chunks_to_read);
     
@@ -107,8 +112,8 @@ function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
         end
     end
     
-    disp(out_Sz)
-    disp(offset)
+%     disp(out_Sz)
+%     disp(offset)
     out_im = out_im(offset(1) + (1:out_Sz(1)), offset(2) + (1:out_Sz(2)), offset(3) + (1:out_Sz(3)));
 end
 
