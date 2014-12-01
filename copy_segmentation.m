@@ -92,7 +92,7 @@ function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
 %     disp(chunks_to_read);
     
     
-    offset = chunk_coords(1,:) - chunks_to_read(1,:).*max_chunk_size - 1;
+    offset = chunk_coords(1,:) - (chunks_to_read(1,:)-1).*max_chunk_size - 1;
     out_Sz = chunk_coords(2,:) - chunk_coords(1,:) + 1;
     out_im = zeros((chunks_to_read(2,:)-chunks_to_read(1,:)+1).*max_chunk_size);
     
