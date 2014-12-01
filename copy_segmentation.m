@@ -17,16 +17,16 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
     imSz(3) = str2double(metadata(spaces(3)+1:spaces(4)-2));
     
     
-    data_dim_spot = strfind(metadata, 'dataResolution');
-    metadata = char(metadata(data_dim_spot(1):data_dim_spot(1)+100));
-    % dataDimensions: [123, 3456, 12222]
-    
-    spaces = find(isspace(metadata));
-    res(1) = str2double(metadata(spaces(1)+2:spaces(2)-2));
-    res(2) = str2double(metadata(spaces(2)+1:spaces(3)-2));
-    res(3) = str2double(metadata(spaces(3)+1:spaces(4)-2));
-    
-    imSz = imSz./res;
+%     data_dim_spot = strfind(metadata, 'dataResolution');
+%     metadata = char(metadata(data_dim_spot(1):data_dim_spot(1)+100));
+%     % dataDimensions: [123, 3456, 12222]
+%     
+%     spaces = find(isspace(metadata));
+%     res(1) = str2double(metadata(spaces(1)+2:spaces(2)-2));
+%     res(2) = str2double(metadata(spaces(2)+1:spaces(3)-2));
+%     res(3) = str2double(metadata(spaces(3)+1:spaces(4)-2));
+%     
+%     imSz = imSz./res;
     
     chunk_size_spot = strfind(metadata, 'chunkDim');
     metadata = metadata(chunk_size_spot(1):end);
