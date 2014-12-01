@@ -78,7 +78,7 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
         disp(['written block ' num2str(n) ' of ' num2str(prod(num_chunks_to_write))])
         toc
     end
-    
+    fclose(fid);
     
 end
 
@@ -115,6 +115,8 @@ function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
 %     disp(out_Sz)
 %     disp(offset)
     out_im = out_im(offset(1) + (1:out_Sz(1)), offset(2) + (1:out_Sz(2)), offset(3) + (1:out_Sz(3)));
+    
+    disp(size(out_im));
 end
 
 function chunk_im = get_omni_chunk(fid, chunk_start, chunk_size, vol_size)
