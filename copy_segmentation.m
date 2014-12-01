@@ -107,6 +107,8 @@ function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
         end
     end
     
+    disp(out_Sz)
+    disp(offset)
     out_im = out_im(offset(1) + (1:out_Sz(1)), offset(2) + (1:out_Sz(2)), offset(3) + (1:out_Sz(3)));
 end
 
