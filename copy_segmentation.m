@@ -51,7 +51,7 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
         
         [c(1), c(2), c(3)] = ind2sub(num_chunks_to_write, n);              
         chunk_coords = [((c-1).*write_size) + write_coords(1,:); ...
-            min([c.*write_size + write_coords(1,:); imSz])];
+            min([c.*write_size + write_coords(1,:) - 1; imSz])];
                 
         disp(chunk_coords);
         
