@@ -86,10 +86,10 @@ end
 function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
     chunks_to_read = [1+floor((chunk_coords(1,:)-1)./max_chunk_size); ...
         ceil((chunk_coords(2,:))./max_chunk_size)];
-    
-    disp(chunk_coords);
-    disp(max_chunk_size);
-    disp(chunks_to_read);
+%     
+%     disp(chunk_coords);
+%     disp(max_chunk_size);
+%     disp(chunks_to_read);
     
     
     offset = chunk_coords(1,:) - chunks_to_read(1,:).*max_chunk_size - 1;
@@ -101,8 +101,8 @@ function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
             for z = chunks_to_read(1,3):chunks_to_read(2,3)
                 chunk_im = get_omni_chunk(fid, ([x y z]-1).*max_chunk_size + 1, max_chunk_size, vol_size);
                 out_im(x-chunks_to_read(1,1) + (1:size(chunk_im,1)), ...
-                    y-chunks_to_read(2,1) + (1:size(chunk_im,2)), ...
-                    z-chunks_to_read(3,1) + (1:size(chunk_im,3))) = chunk_im;
+                    y-chunks_to_read(1,2) + (1:size(chunk_im,2)), ...
+                    z-chunks_to_read(1,3) + (1:size(chunk_im,3))) = chunk_im;
             end
         end
     end
