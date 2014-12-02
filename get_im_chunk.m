@@ -33,10 +33,18 @@ function im = get_cube_im(cube_loc, imdir, chunkSz, cubeSz)
     fn = [imdir '/x' xstr '/y' ystr '/im_x' xstr 'y' ystr 'z' zstr '.raw'];
     
     fid = fopen(fn, 'r');
-    im = fread(fid, 'float');
-    chunks_per_cube = cubeSz./chunkSz;
+    if fid == -1
+        im = zeros(cubeSz);
+    else
     
-    im = reshape(im, [chunkSz chunks_per_cube]);
-    im = permute(im, [1 4 2 5 3 6]);
-    im = reshape(im, cubeSz);
+        im = fread(fid, 'float');
+        chunks_per_cube = cubeSz./chunkSz;
+
+        im = reshape(im, [chunkSz chunks_per_cube]);
+        im = permute(im, [1 4 2 5 3 6]);
+        im = reshape(im, cubeSz);
+
+        fclose(fid);
+    end
+    
 end
