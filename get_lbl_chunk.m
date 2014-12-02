@@ -4,7 +4,7 @@ function im = get_lbl_chunk(lbldir, coords)
     CHUNKSIZE = [128 128 128];
     CUBESIZE = [128 128 128];
     UPSMPL = [2 2 2];
-    OFFSET = floor([466 498 680]./UPSMPL) - CUBESIZE + OVERLAP;
+    OFFSET = floor([468 500 690]./UPSMPL) - CUBESIZE + OVERLAP;
     
     coords = floor(coords ./ (ones(2,1)*UPSMPL));
     
@@ -33,7 +33,7 @@ function im = get_cube_im(cube_loc, imdir, chunkSz, cubeSz)
     xstr = num2str(cube_loc(1));
     ystr = num2str(cube_loc(2));
     zstr = num2str(cube_loc(3));
-    fn = [imdir '/x' xstr '/y' ystr '/im_x' xstr 'y' ystr 'z' zstr '.raw'];
+    fn = [imdir '/x' xstr '/y' ystr '/lbl_x' xstr 'y' ystr 'z' zstr '.raw'];
     
     fid = fopen(fn, 'r');
     if fid == -1
