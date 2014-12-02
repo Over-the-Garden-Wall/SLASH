@@ -1,4 +1,4 @@
-function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
+function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size, overlap)
 
     
     %get volume size
@@ -40,6 +40,10 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
     
     max_chunk_size = chunkEdge*ones(1,3);
     
+    if ~exist('overlap','var') || isempty(overlap)
+        overlap = [0 0 0];
+    end
+    
     num_chunks = ceil(imSz./max_chunk_size);
     c = zeros(1,3);
     
@@ -51,7 +55,7 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
     
     disp(imSz);
     
-    num_chunks_to_write = ceil((1+(write_coords(2,:) - write_coords(1,:)))./write_size);
+    num_chunks_to_write = ceil((overlap+1+(write_coords(2,:) - write_coords(1,:)))./(write_size-overlap));
 %     
 %     disp(write_coords)
 %     disp(num_chunks_to_write);
@@ -61,8 +65,8 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size)
         tic
         
         [c(1), c(2), c(3)] = ind2sub(num_chunks_to_write, n);              
-        chunk_coords = [((c-1).*write_size) + write_coords(1,:); ...
-            min([c.*write_size + write_coords(1,:) - 1; imSz])];
+        chunk_coords = [((c-1).*(write_size-overlap)) + write_coords(1,:); ...
+            min([((c-1).*(write_size-overlap)) + write_coords(1,:) + write_size - 1; imSz])];
                 
         disp(chunk_coords);
         
