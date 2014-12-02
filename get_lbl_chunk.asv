@@ -4,9 +4,9 @@ function im = get_lbl_chunk(lbldir, coords)
     CHUNKSIZE = [128 128 128];
     CUBESIZE = [128 128 128];
     UPSMPL = [2 2 2];
-    OFFSET = floor([466 498 680]./UPSMPL) - CUBESIZE + OVERLAP;
+    OFFSET = floor([466 498 680]./UPSMPL - CUBESIZE + OVERLAP;
     
-    coords = floor(coords ./ (ones(2,1)*UPSMPL));
+    coords = floor(coords ./ ones(2,1)*UPSMPL);
     
     cubes_to_get = [floor((coords(1,:) - OFFSET)./(CUBESIZE-OVERLAP)); ...
         floor((coords(2,:) - OFFSET)./(CUBESIZE-OVERLAP))];
