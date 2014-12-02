@@ -98,11 +98,6 @@ function copy_segmentation(omni_file_dir, out_dir, write_coords, write_size, ove
     
 end
 
-function outstr = format_num(num, digits)
-
-    outstr = num2str(num);
-    outstr = ['0' * ones(1,digits-length(outstr)), outstr];
-end
 
 function out_im = get_omni_coords(fid, chunk_coords, max_chunk_size, vol_size)
     chunks_to_read = [1+floor((chunk_coords(1,:)-1)./max_chunk_size); ...
