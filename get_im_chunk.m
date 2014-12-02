@@ -1,13 +1,13 @@
 function im = get_im_chunk(imdir, coords)
 
-    OFFSET = [466 498 679];
     OVERLAP = [32 32 32];
     CHUNKSIZE = [128 128 128];
     CUBESIZE = [256 256 256];
+    OFFSET = [466 498 679] - CUBESIZE + OVERLAP;
     
     
     cubes_to_get = [floor((coords(1,:) - OFFSET)./(CUBESIZE-OVERLAP)); ...
-        ceil((coords(2,:) - OFFSET)./(CUBESIZE-OVERLAP))];
+        floor((coords(2,:) - OFFSET)./(CUBESIZE-OVERLAP))];
     
     im = zeros((cubes_to_get(2,:) - cubes_to_get(1,:)).*(CUBESIZE-OVERLAP) + CUBESIZE);
     
@@ -21,7 +21,7 @@ function im = get_im_chunk(imdir, coords)
         end
     end
                 
-    imr = coords - ones(2,1)*(OFFSET + cubes_to_get(1,:).*CUBESIZE);
+    imr = coords - ones(2,1)*(OFFSET + cubes_to_get(1,:).*(CUBESIZE-OVERLAP));
     im = im(imr(1,1):imr(2,1), imr(1,2):imr(2,2), imr(1,3):imr(2,3));
     
 end
