@@ -58,7 +58,7 @@ function new_im = upsample_im_mode(im, upsampling)
         new_im(:,:,:,k) = im;
     end
     
-    new_im = permute(new_im, [1 4 2 5 3 6]);
+    new_im = permute(new_im, [4 1 5 2 6 3]);
     new_im = reshape(new_im, size(im).*upsampling);
 end
     
