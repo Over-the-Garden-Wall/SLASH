@@ -158,9 +158,9 @@ function chunk_im = get_omni_chunk(fid, chunk_start, chunk_size, vol_size)
     end
     
 
-    byte_pos = bytes_per_plane*(chunk_num(3)) + ...
+    byte_pos = 4*(bytes_per_plane*(chunk_num(3)) + ...
         bytes_per_col * (chunk_num(2)) + ...
-        bytes_per_cube * (chunk_num(1));
+        bytes_per_cube * (chunk_num(1)));
     
     fseek(fid, byte_pos, 'bof');
     chunk_im = fread(fid, prod(chunk_size), 'uint32');
