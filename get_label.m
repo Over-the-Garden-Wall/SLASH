@@ -11,6 +11,8 @@ function im = get_label(coords)
     %get volume size
     fid = fopen([C.label_dir '/projectMetadata.yaml'],'r');
     
+    disp([C.label_dir '/projectMetadata.yaml']);
+    
     metadata = fread(fid,'char')';
     
     data_dim_spot = strfind(metadata, 'dataDimensions');
