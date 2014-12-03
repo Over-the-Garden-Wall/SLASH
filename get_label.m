@@ -69,7 +69,7 @@ function im = get_label(coords)
     imr = coords - ones(2,1)*(chunks_to_get(1,:).*max_chunk_size);
     im = im(imr(1,1):imr(2,1), imr(1,2):imr(2,2), imr(1,3):imr(2,3));
     
-    im = upsample_im_mode(im, UPSMPL);
+    im = upsample_im_mode(im, [2 2 2]);
     
     
     fclose(fid);
@@ -111,4 +111,13 @@ function chunk_im = get_omni_chunk(fid, chunk_num, chunk_size, vol_size)
 end
     
     
+function new_im = upsample_im_mode(im, upsampling)
+    new_im = zeros([size(im) upsampling], 'uint32');
+    for k = 1:prod(upsampling);
+        new_im(:,:,:,k) = im;
+    end
+    
+    new_im = permute(new_im, [4 1 5 2 6 3]);
+    new_im = reshape(new_im, size(im).*upsampling);
+end
     

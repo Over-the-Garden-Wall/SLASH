@@ -53,6 +53,10 @@ function create_training_example(cube_number, object_number)
         
     lbl = get_label(vol_coords);
     
+    save('../debug.mat','lbl', 'seg');
+    
+    
+    
     lbl_ids = unique(lbl(:));
     lbl_ids(lbl_ids==0) = [];
     
