@@ -41,12 +41,8 @@ function create_training_example(cube_number, object_number)
     
     seg = omniwebcube2im(seg);
     
-    us_loc = find(vol_fn, '_');
-    
-    disp(us_loc);
-    disp(find(vol_fn, '.', 'first'));
-    
-    us_loc(end+1) = find(vol_fn, '.', 'first');
+    us_loc = find(vol_fn=='_');
+    us_loc(end+1) = find(vol_fn == '.', 'first');
     
     vol_coords = [str2double(vol_fn(us_loc(1)+2:us_loc(2)-1)), ...
         str2double(vol_fn(us_loc(2)+1:us_loc(3)-1)), ...
