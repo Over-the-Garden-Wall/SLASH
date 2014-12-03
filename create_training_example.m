@@ -9,6 +9,8 @@ function create_training_example(cube_number, object_number)
     
     vol_dir = [C.cube_dir 'x' format_num(cube_number(1),2) '/y' format_num(cube_number(2),2) '/'];
     
+    disp(vol_dir);
+    
     vol_files = dir(vol_dir);
     
     fn_start = ['x' format_num(cube_number(1),2) 'y' format_num(cube_number(2),2) 'z' format_num(cube_number(3),2)];
@@ -19,15 +21,19 @@ function create_training_example(cube_number, object_number)
         end
     end
     
+    disp(vol_fn);
+    
     if isempty(vol_fn)
         error(['volume not found in ' vol_dir]);
     end
     
-    if ~strmp(vol_fn(end-5:end), '.files')
+    if ~strcmp(vol_fn(end-5:end), '.files')
         vol_fn = [vol_fn '.files'];
     end
     
     segmentation_fn = [vol_dir vol_fn '/segmentations/segmentation1/0/volume.uint32_t.raw'];
+    
+    
     
     fid = fopen(segmentation_fn, 'r');
     seg = fread(fid,'uint32');
