@@ -61,7 +61,7 @@ function im = get_label(coords)
             for z = chunks_to_get(1,3):chunks_to_get(2,3)
                 s = ([x y z] - chunks_to_get(1,:)) .* max_chunk_size;                                
                 im(s(1) + (1:max_chunk_size(1)), s(2) + (1:max_chunk_size(2)), s(3) + (1:max_chunk_size(3))) = ...
-                    get_omni_chunk(fid, [x y z], max_chunk_size, imSz)
+                    get_omni_chunk(fid, [x y z], max_chunk_size, imSz);
             end
         end
     end
