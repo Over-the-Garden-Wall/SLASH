@@ -130,17 +130,20 @@ function create_training_example(cube_number, object_number)
     end
     edge_mat = edge_mat(2:end, 2:end, :);
     
+    
+    
+    
     edge_data = cell(10000,1);    
     num_edges = 0;
     for x = 1:size(edge_mat,1)
-        disp(x)
+%         disp(x)
         for y = x+1:size(edge_mat,1)
             if seg_is_in(x) || seg_is_in(y)
                 num_edges = num_edges+1;
-                edge_data{num_edges}.total = edge_mat(:,:,1);
-                edge_data{num_edges}.min = edge_mat(:,:,2);
-                edge_data{num_edges}.max = edge_mat(:,:,3);
-                edge_data{num_edges}.count = edge_mat(:,:,4);
+                edge_data{num_edges}.total = edge_mat(x,y,1);
+                edge_data{num_edges}.min = edge_mat(x,y,2);
+                edge_data{num_edges}.max = edge_mat(x,y,3);
+                edge_data{num_edges}.count = edge_mat(x,y,4);
                 edge_data{num_edges}.members = [x y];
             end
         end
