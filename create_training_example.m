@@ -159,7 +159,7 @@ function create_training_example(cube_number, object_number)
     
     
     disp(new_in_segs)
-    in_and_adjacent_segs = find(any(edge_mat(:,:,5)) | any(edge_mat(:,:,5), 2));
+    in_and_adjacent_segs = find(any(edge_mat(:,:,5)) | any(edge_mat(:,:,5), 2)');
     
     disp(num_edges)
     
