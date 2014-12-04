@@ -167,8 +167,8 @@ function create_training_example(cube_number, object_number)
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
     
     for k = 1:num_edges
-        disp(edge_data{num_edges}.members)
-        edge_data{num_edges}.members = remap(edge_data{num_edges}.members);
+        disp(edge_data{k}.members)
+        edge_data{k}.members = remap(edge_data{k}.members);
     end
     original_ids = all_segs(in_and_adjacent_segs);
     num_segs = length(in_and_adjacent_segs);
@@ -199,7 +199,7 @@ function create_training_example(cube_number, object_number)
                     k = seg(x,y,z);
                     
                     segments{k}.moments = segments{k}.moments + ...
-                        (x-128.5)^coeffs(:,1) + (y-128.5)^coeffs(:,2) + (z-128.5)^coeffs(:,3);
+                        (x-128.5).^coeffs(:,1) + (y-128.5).^coeffs(:,2) + (z-128.5).^coeffs(:,3);
                     segments{k}.size = segments{k}.size + 1;
                 end
             end
