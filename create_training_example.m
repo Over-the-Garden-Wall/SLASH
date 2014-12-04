@@ -104,7 +104,7 @@ function create_training_example(cube_number, object_number)
     seg_is_in(new_in_segs) = true;
     
     disp(num_segs);
-    disp(find(seg_is_in));
+%     disp(find(seg_is_in));
     
     edge_mat = zeros(num_segs+1, num_segs+1, 5); %total aff, min aff, max aff, count, edge_num
     
@@ -142,8 +142,8 @@ function create_training_example(cube_number, object_number)
     for x = 1:size(edge_mat,1)
 %         disp(x)
         for y = x+1:size(edge_mat,2)
-            if seg_is_in(x) || seg_is_in(y)
-                disp([x y seg_is_in(x) seg_is_in(y)]);
+            if edge_mat(x,y,4)>0 && (seg_is_in(x) || seg_is_in(y))
+%                 disp([x y seg_is_in(x) seg_is_in(y)]);
                 num_edges = num_edges+1;
                 edge_data{num_edges}.total = edge_mat(x,y,1);
                 edge_data{num_edges}.min = edge_mat(x,y,2);
