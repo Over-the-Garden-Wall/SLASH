@@ -104,6 +104,7 @@ function create_training_example(cube_number, object_number)
     seg_is_in(new_in_segs) = true;
     
     disp(num_segs);
+    disp(sum(seg_is_in));
     
     edge_mat = zeros(num_segs+1, num_segs+1, 5); %total aff, min aff, max aff, count, edge_num
     
@@ -124,10 +125,11 @@ function create_training_example(cube_number, object_number)
         end
     end
     
+    edge_mat(:,:,1) = edge_mat(:,:,1) + edge_mat(:,:,1)';
+    edge_mat(:,:,2) = min(cat(3, edge_mat(:,:,2), edge_mat(:,:,2)'),3);
+    edge_mat(:,:,3) = max(cat(3, edge_mat(:,:,3), edge_mat(:,:,3)'),3);
+    edge_mat(:,:,4) = edge_mat(:,:,4) + edge_mat(:,:,4)';
     
-    for k = 1:4;
-        edge_mat(:,:,k) = edge_mat(:,:,k) + edge_mat(:,:,k)';
-    end
     edge_mat = edge_mat(2:end, 2:end, :);
     
     
@@ -139,18 +141,12 @@ function create_training_example(cube_number, object_number)
 %         disp(x)
         for y = x+1:size(edge_mat,1)
             if seg_is_in(x) || seg_is_in(y)
-                if edge_mat(x,y,5) == 0
-                    num_edges = num_edges+1;
-                    edge_mat(x,y,5) = num_edges;
-                    my_id = num_edges;
-                else
-                    my_id = edge_mat(x,y,5);
-                end
-                edge_data{my_id}.total = edge_mat(x,y,1);
-                edge_data{my_id}.min = edge_mat(x,y,2);
-                edge_data{my_id}.max = edge_mat(x,y,3);
-                edge_data{my_id}.count = edge_mat(x,y,4);
-                edge_data{my_id}.members = [x y];
+                num_edges = num_edges+1;
+                edge_data{num_edges}.total = edge_mat(x,y,1);
+                edge_data{num_edges}.min = edge_mat(x,y,2);
+                edge_data{num_edges}.max = edge_mat(x,y,3);
+                edge_data{num_edges}.count = edge_mat(x,y,4);
+                edge_data{num_edges}.members = [x y];
             end
         end
     end
