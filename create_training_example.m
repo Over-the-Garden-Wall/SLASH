@@ -53,8 +53,7 @@ function create_training_example(cube_number, object_number)
         
     lbl = get_label(vol_coords);
     
-    save('../debug.mat','lbl', 'seg');
-    
+%     save('../debug.mat','lbl', 'seg');
     
     
     lbl_ids = unique(lbl(:));
@@ -72,6 +71,8 @@ function create_training_example(cube_number, object_number)
         end
     end
     
+    
+    
     lbl_code = zeros(size(lbl)+2);
     [nhood(:,1), nhood(:,2), nhood(:,3)] = sub2ind([3 3 3], 1:27);
     nhood = nhood - 2;
@@ -86,18 +87,67 @@ function create_training_example(cube_number, object_number)
     
     lbl_code = lbl_code(2:end-1, 2:end-1, 2:end-1);
     
+    all_segs = unique(seg(:));
+    all_segs(all_segs==0) = [];
+
     in_segs = unique(seg(lbl_code == size(nhood,1)));
-    out_segs = unique(seg(lbl_code > 0 & ~lbl_bin));
+    in_segs(in_segs==0) = [];
     
-    num_in = length(in_segs);
-    num_total = num_in + length(out_segs);
+    for k = 1:length(all_segs)
+        if any(all_segs(k)==in_segs)
+            all_segs(k) = [];
+        end
+    end
+    all_segs = [in_segs; all_segs];
     
-    edgemat = false(num_in, num_total);
+    [seg, initial_condense] = condense_im(seg, all_segs);
+    
+    new_in_segs = initial_condense(in_segs); %should be 1:length(in_segs)
+    num_segs = length(all_segs);
+    
+    edge_mat = eye(num_segs+1);
+    nhood = eye(3);
+    for x = 1:255
+        for y = 1:255
+            for z = 1:255
+                for k = 1:3
+                    edge_mat(seg(x,y,z)+1, seg(x+nhood(k,1), y+nhood(k,2), z+nhood(k,3))+1) = ...
+                        edge_mat(seg(x,y,z)+1, seg(x+nhood(k,1), y+nhood(k,2), z+nhood(k,3))+1) + 1;
+                end
+            end
+        end
+    end
+                    
+    edge_mat = edge_mat + edge_mat';
+    edge_mat([1, (length(in_segs)+2:end)], :) = 0;
+    edge_mat(:, 1) = 0;
+    to_keep = find(any(edge_mat));
+    
+    [seg, second_condense] = condense_im(seg, to_keep);
+    
+    original_ids = all_segs(to_keep);
+    
+    %number edges
+    k = 1;
+    for x = 1:size(edge_mat,1)
+        for y = 1:size(edge_mat,2)
+            if x > y
+                edge_mat(x,y) = 0;
+            elseif edge_mat(x,y) ~= 0
+                edge_mat(x,y) = k;
+                k = k + 1;
+            end
+        end
+    end
+    num_edges = k-1;
     
     
-    segments = cell(num_total,1);
+    
+    
+
     [X Y Z] = meshgrid((1:256)-128.5, (1:256)-128.5, (1:256)-128.5);
-    
+
+    % changing this
     for n = 1:num_total
         if n <= num_in
             segments{n}.original_ID = in_segs(n);
@@ -142,3 +192,22 @@ function im = omniwebcube2im(im)
     im = reshape(im, [256 256 256]);
 end
 
+function [im, seg_order] = condense_im(im, values)
+    
+    max_val = max(values);
+    seg_order = zeros(max_val,1);
+    
+    for k = 1:length(values)        
+        seg_order(all_segs(k)) = k;
+    end
+    
+    for k = 1:numel(im)
+        if im(k) > 0
+            if im(k) <= max_val
+                im(k) = seg_order(im(k));            
+            else
+                im(k) = 0;
+            end
+        end
+    end
+end
