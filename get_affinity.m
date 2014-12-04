@@ -11,13 +11,13 @@ function im = get_affinity(coords)
     chunks_to_get = [floor(coords(1,:)./cube_size); ...
         floor(coords(2,:)./cube_size)];
     
-    im = zeros((chunks_to_get(2,:) - chunks_to_get(1,:) + 1).*cube_size, 'uint32');
+    im = zeros([(chunks_to_get(2,:) - chunks_to_get(1,:) + 1).*cube_size, 3], 'uint32');
     
     for x = chunks_to_get(1,1):chunks_to_get(2,1)
         for y = chunks_to_get(1,2):chunks_to_get(2,2)
             for z = chunks_to_get(1,3):chunks_to_get(2,3)
                 s = ([x y z] - chunks_to_get(1,:)) .* cube_size;                                
-                im(s(1) + (1:cube_size(1)), s(2) + (1:cube_size(2)), s(3) + (1:cube_size(3))) = ...
+                im(s(1) + (1:cube_size(1)), s(2) + (1:cube_size(2)), s(3) + (1:cube_size(3)), :) = ...
                     get_aff_cube([x y z]);
             end
         end
