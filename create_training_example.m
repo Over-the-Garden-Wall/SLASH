@@ -74,7 +74,7 @@ function create_training_example(cube_number, object_number)
     
     
     lbl_code = zeros(size(lbl)+2);
-    [nhood(:,1), nhood(:,2), nhood(:,3)] = sub2ind([3 3 3], 1:27);
+    [nhood(:,1), nhood(:,2), nhood(:,3)] = ind2sub([3 3 3], 1:27);
     nhood = nhood - 2;
     
     lbl_bin = lbl == object_number;
