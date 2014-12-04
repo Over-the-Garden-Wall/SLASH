@@ -93,6 +93,7 @@ function create_training_example(cube_number, object_number)
 
     in_segs = unique(seg(lbl_code == size(nhood,1)));
     in_segs(in_segs==0) = [];
+    disp(in_segs);
     
     [seg, initial_condense] = condense_im(seg, all_segs);
     
