@@ -92,9 +92,6 @@ function create_training_example(cube_number, object_number)
     all_segs(all_segs==0) = [];
     
     
-    save('../debug.mat','lbl_bin', 'seg', 'lbl_code');
-    error('all done!');
-
     in_segs = unique(seg(lbl_code == size(nhood,1)));
     in_segs(in_segs==0) = [];
     disp(in_segs);
