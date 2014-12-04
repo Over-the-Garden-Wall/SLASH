@@ -53,7 +53,7 @@ function create_training_example(cube_number, object_number)
         
     lbl = get_label(vol_coords);
     aff = get_affinity(vol_coords);
-    save('../debug.mat','lbl', 'seg', 'aff');
+%     save('../debug.mat','lbl', 'seg', 'aff');
     
     
     lbl_ids = unique(lbl(:));
@@ -101,6 +101,8 @@ function create_training_example(cube_number, object_number)
     seg_is_in = false(num_segs,1);
     seg_is_in(new_in_segs) = true;
     
+    disp(num_segs);
+    
     edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count
     
     
@@ -119,6 +121,9 @@ function create_training_example(cube_number, object_number)
             end
         end
     end
+    
+    
+    disp('banana');
     
     for k = 1:4;
         edge_mat(:,:,k) = edge_mat(:,:,k) + edge_mat(:,:,k)';
