@@ -93,6 +93,7 @@ function create_training_example(cube_number, object_number)
 
     in_segs = unique(seg(lbl_code == size(nhood,1)));
     in_segs(in_segs==0) = [];
+    disp(in_segs);
     
     [seg, initial_condense] = condense_im(seg, all_segs);
     
@@ -148,6 +149,8 @@ function create_training_example(cube_number, object_number)
     end
                     
     edge_data = edge_data(1:num_edges);
+    
+    
     
     in_and_adjacent_segs = find(any(edge_mat(new_in_segs,:,4),2));
     

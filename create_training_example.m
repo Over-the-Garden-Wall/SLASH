@@ -90,6 +90,10 @@ function create_training_example(cube_number, object_number)
     
     all_segs = unique(seg(:));
     all_segs(all_segs==0) = [];
+    
+    
+    save('../debug.mat','lbl_bin', 'seg', 'lbl_code');
+    error('all done!');
 
     in_segs = unique(seg(lbl_code == size(nhood,1)));
     in_segs(in_segs==0) = [];
@@ -151,7 +155,6 @@ function create_training_example(cube_number, object_number)
     edge_data = edge_data(1:num_edges);
     
     
-    save('../debug.mat','lbl', 'seg', 'aff', 'edge_mat', 'edge_data', 'new_in_segs');
     
     in_and_adjacent_segs = find(any(edge_mat(new_in_segs,:,4),2));
     
