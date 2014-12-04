@@ -141,7 +141,7 @@ function create_training_example(cube_number, object_number)
     end
     num_edges = k-1;
     
-    
+    %bananas go here
     
     
 
