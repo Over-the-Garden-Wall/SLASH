@@ -133,6 +133,7 @@ function create_training_example(cube_number, object_number)
     edge_data = cell(10000,1);    
     num_edges = 0;
     for x = 1:size(edge_mat,1)
+        disp(x)
         for y = x+1:size(edge_mat,1)
             if seg_is_in(x) || seg_is_in(y)
                 num_edges = num_edges+1;
