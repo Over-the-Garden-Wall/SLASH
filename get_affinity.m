@@ -1,9 +1,8 @@
 function im = get_affinity(coords)
 
     coords = coords - 18;
-    coords(:,1) = coords(:,1)+18;
-        
-
+    coords(:,1) = coords(:,1)+128;
+    
     cube_size = 128 * ones(1,3);
     
     
