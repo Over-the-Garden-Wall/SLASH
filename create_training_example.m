@@ -125,11 +125,11 @@ function create_training_example(cube_number, object_number)
         end
     end
     
-    disp(size(edge_mat));
+%     disp(size(edge_mat));
     
     edge_mat(:,:,1) = edge_mat(:,:,1) + edge_mat(:,:,1)';
-    edge_mat(:,:,2) = min(cat(3, edge_mat(:,:,2), edge_mat(:,:,2)'),3);
-    edge_mat(:,:,3) = max(cat(3, edge_mat(:,:,3), edge_mat(:,:,3)'),3);
+    edge_mat(:,:,2) = min(cat(3, edge_mat(:,:,2), edge_mat(:,:,2)'), [], 3);
+    edge_mat(:,:,3) = max(cat(3, edge_mat(:,:,3), edge_mat(:,:,3)'), [], 3);
     edge_mat(:,:,4) = edge_mat(:,:,4) + edge_mat(:,:,4)';
     
     edge_mat = edge_mat(2:end, 2:end, :);
