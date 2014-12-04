@@ -149,6 +149,8 @@ function create_training_example(cube_number, object_number)
     
     in_and_adjacent_segs = find(any(edge_mat(new_in_segs,:,4),2));
     
+    disp('o hi!')
+    
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
     for k = 1:num_edges
         edge_data{num_edges}.members = remap(edge_data{num_edges}.members);
@@ -164,6 +166,9 @@ function create_training_example(cube_number, object_number)
         kcoeffs = kcoeffs(sum(kcoeffs,2)==k,:);
         coeffs = [coeffs; kcoeffs];
     end
+    
+    
+    disp(num_segs)
     
     segments = cell(num_segs,1);
     for n = 1:num_segs
