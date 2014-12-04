@@ -141,8 +141,9 @@ function create_training_example(cube_number, object_number)
     num_edges = 0;
     for x = 1:size(edge_mat,1)
 %         disp(x)
-        for y = x+1:size(edge_mat,1)
+        for y = x+1:size(edge_mat,2)
             if seg_is_in(x) || seg_is_in(y)
+                disp([x y]);
                 num_edges = num_edges+1;
                 edge_data{num_edges}.total = edge_mat(x,y,1);
                 edge_data{num_edges}.min = edge_mat(x,y,2);
