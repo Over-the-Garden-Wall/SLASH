@@ -52,8 +52,8 @@ function create_training_example(cube_number, object_number)
         str2double(vol_fn(us_loc(6)+1:us_loc(7)-1))];
         
     lbl = get_label(vol_coords);
-    
-%     save('../debug.mat','lbl', 'seg');
+    aff = get_affinity(vol_coords);
+    save('../debug.mat','lbl', 'seg', 'aff');
     
     
     lbl_ids = unique(lbl(:));
@@ -70,6 +70,15 @@ function create_training_example(cube_number, object_number)
             error('object not found in label');
         end
     end
+    
+    
+    
+    %
+    aff = get_affinity(vol_coords);
+
+    %
+    
+    
     
     
     
@@ -93,58 +102,43 @@ function create_training_example(cube_number, object_number)
     in_segs = unique(seg(lbl_code == size(nhood,1)));
     in_segs(in_segs==0) = [];
     
-    for k = 1:length(all_segs)
-        if any(all_segs(k)==in_segs)
-            all_segs(k) = [];
-        end
-    end
-    all_segs = [in_segs; all_segs];
-    
     [seg, initial_condense] = condense_im(seg, all_segs);
     
-    new_in_segs = initial_condense(in_segs); %should be 1:length(in_segs)
+    new_in_segs = initial_condense(in_segs);
     num_segs = length(all_segs);
     
-    edge_mat = eye(num_segs+1);
-    nhood = eye(3);
-    for x = 1:255
-        for y = 1:255
-            for z = 1:255
-                for k = 1:3
-                    edge_mat(seg(x,y,z)+1, seg(x+nhood(k,1), y+nhood(k,2), z+nhood(k,3))+1) = ...
-                        edge_mat(seg(x,y,z)+1, seg(x+nhood(k,1), y+nhood(k,2), z+nhood(k,3))+1) + 1;
+    
+    edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count
+    
+    
+    nhood = -eye(3);
+    for x = 2:256
+        for y = 2:256
+            for z = 2:256
+                id1 = seg(x,y,z);
+                for n = 1:3
+                    id2 = seg(x+nhood(n,1), y+nhood(n,2), z+nhood(n,3));
+                    edge_mat(id1+1, id2+1, 1) = edge_mat(id1+1, id2+1, 1) + aff(x,y,z,n);
+                    edge_mat(id1+1, id2+1, 2) = min(edge_mat(id1+1, id2+1, 2), aff(x,y,z,n));
+                    edge_mat(id1+1, id2+1, 3) = max(edge_mat(id1+1, id2+1, 3), aff(x,y,z,n));
+                    edge_mat(id1+1, id2+1, 4) = edge_mat(id1+1, id2+1, 4) + 1;
                 end
             end
         end
     end
-                    
-    edge_mat = edge_mat + edge_mat';
-    edge_mat([1, (length(in_segs)+2:end)], :) = 0;
-    edge_mat(:, 1) = 0;
-    to_keep = find(any(edge_mat));
     
-    [seg, second_condense] = condense_im(seg, to_keep);
+    for k = 1:4;
+        edge_mat(:,:,k) = edge_mat(:,:,k) + edge_mat(:,:,k)';
+    end
+    edge_mat = edge_mat(2:end, 2:end, :);
     
-    original_ids = all_segs(to_keep);
-    
-    %number edges
-    k = 1;
-    for x = 1:size(edge_mat,1)
-        for y = 1:size(edge_mat,2)
-            if x > y
-                edge_mat(x,y) = 0;
-            elseif edge_mat(x,y) ~= 0
-                edge_mat(x,y) = k;
-                k = k + 1;
-            end
+    for x = 2:size(edge_mat,1)
+        for y = x+1:size(edge_mat,1)
+            %do this
         end
     end
-    num_edges = k-1;
-    
-    %bananas go here
-    
-    
-
+                    
+                
     [X Y Z] = meshgrid((1:256)-128.5, (1:256)-128.5, (1:256)-128.5);
 
     % changing this
