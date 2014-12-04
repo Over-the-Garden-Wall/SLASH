@@ -73,14 +73,6 @@ function create_training_example(cube_number, object_number)
     
     
     
-    %
-    aff = get_affinity(vol_coords);
-
-    %
-    
-    
-    
-    
     
     lbl_code = zeros(size(lbl)+2);
     [nhood(:,1), nhood(:,2), nhood(:,3)] = ind2sub([3 3 3], 1:27);
@@ -106,7 +98,8 @@ function create_training_example(cube_number, object_number)
     
     new_in_segs = initial_condense(in_segs);
     num_segs = length(all_segs);
-    
+    seg_is_in = false(num_segs,1);
+    seg_is_in(new_in_segs) = true;
     
     edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count
     
@@ -132,51 +125,63 @@ function create_training_example(cube_number, object_number)
     end
     edge_mat = edge_mat(2:end, 2:end, :);
     
-    for x = 2:size(edge_mat,1)
+    edge_data = cell(10000,1);    
+    num_edges = 0;
+    for x = 1:size(edge_mat,1)
         for y = x+1:size(edge_mat,1)
-            %do this
+            if seg_is_in(x) || seg_in_in(y)
+                num_edges = num_edges+1;
+                edge_data{num_edges}.total = edge_mat(:,:,1);
+                edge_data{num_edges}.min = edge_mat(:,:,2);
+                edge_data{num_edges}.max = edge_mat(:,:,3);
+                edge_data{num_edges}.count = edge_mat(:,:,4);
+                edge_data{num_edges}.members = [x y];
+            end
         end
     end
                     
-                
-    [X Y Z] = meshgrid((1:256)-128.5, (1:256)-128.5, (1:256)-128.5);
-
-    % changing this
-    for n = 1:num_total
-        if n <= num_in
-            segments{n}.original_ID = in_segs(n);
-            segments{n}.is_in = true;
-        else
-            segments{n}.original_ID = out_segs(n-num_in);
-            segments{n}.is_in = false;
-        end
-        
-        is_me = seg == segments{n}.original_ID;
-        x = X(is_me);
-        y = Y(is_me);
-        z = Z(is_me);
-        
-        segments{n}.moments = cell(1,C.moment_depth_generation);
-        segments{n}.size = size(x,1);
-            
-        for k = 1:C.moment_depth_generation
-            coeffs = [];
-            [coeffs(:,1), coeffs(:,2), coeffs(:,3)] = ind2sub((1+k)*ones(1,3), 1:(k+1)^3);
-            coeffs = coeffs-1;
-            coeffs = coeffs(sum(coeffs,2)==k,:);
-            num_combs = size(coeffs,1);
-            
-            segments{n}.moments{k}.mat = zeros(num_combs,1);
-            for l = 1:num_combs
-                segments{n}.moments{k}.mat(l) = sum(x.^coeffs(l,1).*y.^coeffs(l,2).*z.^coeffs(l,3));
-            end
-        end
-            
+    edge_data = edge_data(1:num_edges);
+    
+    in_and_adjacent_segs = find(any(edge_mat(new_in_segs,:,4),2));
+    
+    [seg remap] = condense_im(seg, in_and_adjacent_segs);
+    for k = 1:num_edges
+        edge_data{num_edges}.members = remap(edge_data{num_edges}.members);
+    end
+    original_ids = all_segs(in_and_adjacent_segs);
+    num_segs = length(in_and_adjacent_segs);
+    
+    coeffs = [];
+    for k = 1:C.moment_depth_generation
+        kcoeffs = [];
+        [kcoeffs(:,1), kcoeffs(:,2), kcoeffs(:,3)] = ind2sub((1+k)*ones(1,3), 1:(k+1)^3);
+        kcoeffs = kcoeffs-1;
+        kcoeffs = kcoeffs(sum(kcoeffs,2)==k,:);
+        coeffs = [coeffs; kcoeffs];
     end
     
+    segments = cell(num_segs,1);
+    for n = 1:num_segs
+        segments{n}.moments = zeros(size(coeffs,1),1);
+        segments{n}.size = 0;
+        segments{n}.original_id = original_ids(n);
+    end
+        
+    for x = 1:256
+        for y = 1:256
+            for z = 1:256
+                if seg(x,y,z) ~= 0
+                    k = seg(x,y,z);
+                    
+                    segments{k}.moments = segments{k}.moments + ...
+                        (x-128.5)^coeffs(:,1) + (y-128.5)^coeffs(:,2) + (z-128.5)^coeffs(:,3);
+                    segments{k}.size = segments{k}.size + 1;
+                end
+            end
+        end
+    end
     
-    
-    
+    save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
     
 end
 
@@ -192,7 +197,7 @@ function [im, seg_order] = condense_im(im, values)
     seg_order = zeros(max_val,1);
     
     for k = 1:length(values)        
-        seg_order(all_segs(k)) = k;
+        seg_order(values(k)) = k;
     end
     
     for k = 1:numel(im)
