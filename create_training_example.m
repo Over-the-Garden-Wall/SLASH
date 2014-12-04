@@ -158,7 +158,8 @@ function create_training_example(cube_number, object_number)
     disp(num_edges)
     
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
-
+    disp(in_and_adjacent_segs);
+    
     for k = 1:num_edges
         disp(edge_data{num_edges}.members)
         edge_data{num_edges}.members = remap(edge_data{num_edges}.members);
