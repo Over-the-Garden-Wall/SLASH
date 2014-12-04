@@ -123,8 +123,6 @@ function create_training_example(cube_number, object_number)
     end
     
     
-    disp('banana');
-    
     for k = 1:4;
         edge_mat(:,:,k) = edge_mat(:,:,k) + edge_mat(:,:,k)';
     end
@@ -156,6 +154,7 @@ function create_training_example(cube_number, object_number)
     disp('o hi!')
     
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
+    disp(find(remap));
     for k = 1:num_edges
         disp(edge_data{num_edges}.members)
         edge_data{num_edges}.members = remap(edge_data{num_edges}.members);
