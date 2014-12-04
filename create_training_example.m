@@ -105,7 +105,7 @@ function create_training_example(cube_number, object_number)
     
     disp(num_segs);
     
-    edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count
+    edge_mat = zeros(num_segs+1, num_segs+1, 5); %total aff, min aff, max aff, count, edge_num
     
     
     nhood = -eye(3);
@@ -139,12 +139,18 @@ function create_training_example(cube_number, object_number)
 %         disp(x)
         for y = x+1:size(edge_mat,1)
             if seg_is_in(x) || seg_is_in(y)
-                num_edges = num_edges+1;
-                edge_data{num_edges}.total = edge_mat(x,y,1);
-                edge_data{num_edges}.min = edge_mat(x,y,2);
-                edge_data{num_edges}.max = edge_mat(x,y,3);
-                edge_data{num_edges}.count = edge_mat(x,y,4);
-                edge_data{num_edges}.members = [x y];
+                if edge_mat(x,y,5) == 0
+                    num_edges = num_edges+1;
+                    edge_mat(x,y,5) = num_edges;
+                    my_id = num_edges;
+                else
+                    my_id = edge_mat(x,y,5);
+                end
+                edge_data{my_id}.total = edge_mat(x,y,1);
+                edge_data{my_id}.min = edge_mat(x,y,2);
+                edge_data{my_id}.max = edge_mat(x,y,3);
+                edge_data{my_id}.count = edge_mat(x,y,4);
+                edge_data{my_id}.members = [x y];
             end
         end
     end
@@ -153,11 +159,11 @@ function create_training_example(cube_number, object_number)
     
     
     disp(new_in_segs)
-    in_and_adjacent_segs = find(any(edge_mat(new_in_segs,:,4),2));
+    in_and_adjacent_segs = find(any(edge_mat(new_in_segs,:,4)));
     
     disp(num_edges)
     
-    save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
+%     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
     
     for k = 1:num_edges
