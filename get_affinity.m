@@ -23,7 +23,7 @@ function im = get_affinity(coords)
     end
                 
     imr = coords - ones(2,1)*(chunks_to_get(1,:).*cube_size);
-    im = im(imr(1,1):imr(2,1), imr(1,2):imr(2,2), imr(1,3):imr(2,3));
+    im = im(imr(1,1):imr(2,1), imr(1,2):imr(2,2), imr(1,3):imr(2,3), :);
     
     
 end
