@@ -129,7 +129,7 @@ function create_training_example(cube_number, object_number)
     num_edges = 0;
     for x = 1:size(edge_mat,1)
         for y = x+1:size(edge_mat,1)
-            if seg_is_in(x) || seg_in_in(y)
+            if seg_is_in(x) || seg_is_in(y)
                 num_edges = num_edges+1;
                 edge_data{num_edges}.total = edge_mat(:,:,1);
                 edge_data{num_edges}.min = edge_mat(:,:,2);
