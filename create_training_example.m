@@ -150,7 +150,7 @@ function create_training_example(cube_number, object_number)
     edge_data = edge_data(1:num_edges);
     
     
-    save('../debug.mat','lbl', 'seg', 'aff', 'edge_mat', 'edge_data');
+    save('../debug.mat','lbl', 'seg', 'aff', 'edge_mat', 'edge_data', 'new_in_segs');
     
     in_and_adjacent_segs = find(any(edge_mat(new_in_segs,:,4),2));
     
