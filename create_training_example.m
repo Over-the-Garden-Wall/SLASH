@@ -185,7 +185,7 @@ function create_training_example(cube_number, object_number)
     end
     
     
-    disp(coeffs)
+%     disp(coeffs)
     
     segments = cell(num_segs,1);
     for n = 1:num_segs
