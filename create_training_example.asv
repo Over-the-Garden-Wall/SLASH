@@ -107,7 +107,7 @@ function create_training_example(cube_number, object_number)
 %     disp(find(seg_is_in));
     
     edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count, edge_num
-    
+    edge_mat(:,:,2) = Inf;
     
     nhood = -eye(3);
     for x = 2:256
@@ -150,6 +150,7 @@ function create_training_example(cube_number, object_number)
                 edge_data{num_edges}.max = edge_mat(x,y,3);
                 edge_data{num_edges}.count = edge_mat(x,y,4);
                 edge_data{num_edges}.members = [x y];
+                edge_data{num_edges}.is_correct = seg_is_in(x) && seg_is_in(y);
             end
         end
     end
@@ -158,14 +159,17 @@ function create_training_example(cube_number, object_number)
     
     disp(num_edges)
 
-    in_and_adjacent_segs = find(any(edge_mat(:,:,4)) | any(edge_mat(:,:,4), 2)');
-    
+    in_and_adjacent_segs = zeros(1,num_edges*2);
+    for k = 1:num_edges
+        in_and_adjacent_segs((k-1)*2 + (1:2)) = edge_data{k}.members;
+    end
+    in_and_adjacent_segs = unique(in_and_adjacent_segs);
     
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
     
     for k = 1:num_edges
-        disp(edge_data{k}.members)
+%         disp(edge_data{k}.members)
         edge_data{k}.members = remap(edge_data{k}.members);
     end
     original_ids = all_segs(in_and_adjacent_segs);
@@ -181,7 +185,7 @@ function create_training_example(cube_number, object_number)
     end
     
     
-    disp(num_segs)
+    disp(coeffs)
     
     segments = cell(num_segs,1);
     for n = 1:num_segs
@@ -203,6 +207,8 @@ function create_training_example(cube_number, object_number)
             end
         end
     end
+    
+    for k = 
     
     save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
     
