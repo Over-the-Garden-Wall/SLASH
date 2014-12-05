@@ -210,7 +210,7 @@ function create_training_example(cube_number, object_number)
     end
     
     newer_in_segs = remap(new_in_segs);
-    for k = newer_in_segs
+    for k = newer_in_segs'
         segments{k}.is_in = true;
     end
     
