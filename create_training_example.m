@@ -156,11 +156,12 @@ function create_training_example(cube_number, object_number)
                     
     edge_data = edge_data(1:num_edges);
     
-    
-    disp(new_in_segs)
+    disp(num_edges)
+
     in_and_adjacent_segs = find(any(edge_mat(:,:,5)) | any(edge_mat(:,:,5), 2)');
     
-    disp(num_edges)
+    disp(sum(in_and_adjacent_segs))
+    disp(in_and_adjacent_segs)
     
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
