@@ -107,7 +107,7 @@ function create_training_example(cube_number, object_number)
 %     disp(find(seg_is_in));
     
     edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count, edge_num
-    
+    edge_mat(:,:,2) = Inf;
     
     nhood = -eye(3);
     for x = 2:256
