@@ -106,7 +106,7 @@ function create_training_example(cube_number, object_number)
     disp(num_segs);
 %     disp(find(seg_is_in));
     
-    edge_mat = zeros(num_segs+1, num_segs+1, 5); %total aff, min aff, max aff, count, edge_num
+    edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count, edge_num
     
     
     nhood = -eye(3);
@@ -158,15 +158,15 @@ function create_training_example(cube_number, object_number)
     
     disp(num_edges)
 
-    in_and_adjacent_segs = find(any(edge_mat(:,:,5)) | any(edge_mat(:,:,5), 2)');
-    
-    disp(sum(in_and_adjacent_segs))
-    disp(in_and_adjacent_segs)
+    in_and_adjacent_segs = zeros(1,num_edges*2);
+    for k = 1:num_edges
+        in_and_adjacent_segs((k-1)*2 + (1:2)) = edge_data{k}.members;
+    end
+    in_and_adjacent_segs = unique(in_and_adjacent_segs);
     
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
     
-    disp(in_and_adjacent_segs');
     for k = 1:num_edges
         disp(edge_data{k}.members)
         edge_data{k}.members = remap(edge_data{k}.members);

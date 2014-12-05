@@ -104,8 +104,9 @@ function create_training_example(cube_number, object_number)
     seg_is_in(new_in_segs) = true;
     
     disp(num_segs);
+%     disp(find(seg_is_in));
     
-    edge_mat = zeros(num_segs+1, num_segs+1, 5); %total aff, min aff, max aff, count, edge_num
+    edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count, edge_num
     
     
     nhood = -eye(3);
@@ -124,9 +125,11 @@ function create_training_example(cube_number, object_number)
         end
     end
     
+%     disp(size(edge_mat));
+    
     edge_mat(:,:,1) = edge_mat(:,:,1) + edge_mat(:,:,1)';
-    edge_mat(:,:,2) = min(cat(3, edge_mat(:,:,2), edge_mat(:,:,2)'),3);
-    edge_mat(:,:,3) = max(cat(3, edge_mat(:,:,3), edge_mat(:,:,3)'),3);
+    edge_mat(:,:,2) = min(cat(3, edge_mat(:,:,2), edge_mat(:,:,2)'), [], 3);
+    edge_mat(:,:,3) = max(cat(3, edge_mat(:,:,3), edge_mat(:,:,3)'), [], 3);
     edge_mat(:,:,4) = edge_mat(:,:,4) + edge_mat(:,:,4)';
     
     edge_mat = edge_mat(2:end, 2:end, :);
@@ -138,8 +141,9 @@ function create_training_example(cube_number, object_number)
     num_edges = 0;
     for x = 1:size(edge_mat,1)
 %         disp(x)
-        for y = x+1:size(edge_mat,1)
-            if seg_is_in(x) || seg_is_in(y)
+        for y = x+1:size(edge_mat,2)
+            if edge_mat(x,y,4)>0 && (seg_is_in(x) || seg_is_in(y))
+%                 disp([x y seg_is_in(x) seg_is_in(y)]);
                 num_edges = num_edges+1;
                 edge_data{num_edges}.total = edge_mat(x,y,1);
                 edge_data{num_edges}.min = edge_mat(x,y,2);
@@ -152,11 +156,10 @@ function create_training_example(cube_number, object_number)
                     
     edge_data = edge_data(1:num_edges);
     
-    
-    disp(new_in_segs)
-    in_and_adjacent_segs = find(any(edge_mat(:,:,5)) | any(edge_mat(:,:,5), 2)');
-    
     disp(num_edges)
+
+    in_and_adjacent_segs = find(any(edge_mat(:,:,4)) | any(edge_mat(:,:,4), 2)');
+    
     
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
