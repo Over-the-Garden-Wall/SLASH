@@ -8,4 +8,5 @@ function C = lash_constants()
     
     C.moment_depth_generation = 5;
     
+    C.translation_fxn_name = 'translate_moment';
 end
