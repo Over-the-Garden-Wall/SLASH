@@ -14,24 +14,77 @@ function M = find_moment_rotation_matrices()
 
     
     %find 2d rotation about z
-    coeffs = coefficient_powers(2, C.moment_depth_generation);
-    coeff_order = sum(coeffs,2);
+    coeffs2d = coefficient_powers(2, C.moment_depth_generation);
+    coeff_order = sum(coeffs2d,2);
     
-    num_samples = 20;
+    order_mat = zeros(length(coeff_order));
+    
+    for n = 1:C.moment_depth_generation
+        order_mat = order_mat + ((coeff_order==n)*n)*(coeff_order==n)';
+    end
+    
+    num_samples = 2;
 
-    tic
+    temp_mats = cell(C.moment_depth_generation,1);
+    
+    for n = 1:C.moment_depth_generation
+        tic
+        num_M_of_order = sum(order_mat(:)==n);
+        
+        rs = ones(n+1, (n+1)*num_M_of_order);
+        Ms = ones(num_M_of_order, (n+1)*num_M_of_order);
+        
+        my_sincos_powers = zeros(n+1,2);
+        for l = 0:n
+            my_sincos_powers(l+1,:) = [l, n-1];
+        end
+        
+        for k = 1:(n+1)*num_M_of_order
+            r = rand*pi;
+            rs(:, k) = (sin(r).^my_sincos_powers(:,1)).*(cos(r).^my_sincos_powers(:,2));
+            for l = 0:n
+                rs(l+1, k) = sin(r)^l*cos(r)^(n-l);
+            end
+            M = find_rotation_by_brute_force(r, coeffs2d, num_samples);  
+            Ms(:,k) = M(order_mat(:)==n);
+        end
+        %X * rs = M
+        
+        temp_mats{n} = round(Ms / rs);
+        toc;
+    end
     
     
-    M = find_rotation_by_brute_force(rand*2, coeffs, num_samples);   
-    is_nonzero = abs(M)>=10^-6;
+    num_adds = 0;
+    for n = 1:C.moment_depth_generation
+        num_adds = max([num_adds; sum(temp_mats{n}~=0,2)]);
+    end
     
-    M = find_rotation_by_brute_force(pi/4, coeffs, num_samples);   
+    rotM2d = zeros([num_adds, 3, size(M)]);
+    
+    for n = 1:C.moment_depth_generation
+        %split into additions
+        inds_in_M = find(order_mat==n);
+        for k = 1:size(temp_mats{n},1)
+            for l = 1:num_adds
+                fI = find(temp_mats{n}(k,:),1,'first');
+                if isempty(fI)
+                    break
+                end
+                fV = temp_mats{n}(k,fI);
+                temp_mats{n}(k,fI) = 0;
+                rotM2d(l, 1, inds_in_M(k)) = fV;
+                rotM2d(l, 2, inds_in_M(k)) = fI-1;
+                rotM2d(l, 3, inds_in_M(k)) = n+1-fI;
+                
+            end
+        end
+    end
+    rotM2d = permute(rotM2d, [3 4 2 1]);
+    
+%     M = rotM2d;
     
     
-    
-
-    toc
-
     %M*q = Ms
 %     M = Ms / q;
         
