@@ -1,4 +1,4 @@
-function M = find_moment_rotation_matrices()
+function Ms = find_moment_rotation_matrices()
     %assumed that M is centered first.
     
     %going to have to find a n^2 x n? matrix N such that:
@@ -45,7 +45,7 @@ function M = find_moment_rotation_matrices()
             for l = 0:n
                 rs(l+1, k) = sin(r)^l*cos(r)^(n-l);
             end
-            M = find_rotation_by_brute_force(r, coeffs2d, num_samples);  
+            M = find_2drotation_by_brute_force(r, coeffs2d, num_samples);  
             Ms(:,k) = M(order_mat(:)==n);
         end
         %X * rs = M
@@ -80,18 +80,60 @@ function M = find_moment_rotation_matrices()
             end
         end
     end
-    rotM2d = permute(rotM2d, [3 4 2 1]);
-    
-%     M = rotM2d;
+%     rotM2d = permute(rotM2d, [3 4 2 1]);
     
     
-    %M*q = Ms
-%     M = Ms / q;
+    
+    %expand rotM2d to 3 3d matrices.
         
+    coeffs = coefficient_powers(3, C.moment_depth_generation);
+    
+    
+    M2d = find_2drotation_by_brute_force(1, coeffs2d, num_samples);
+    error_factor = 10000;
+    M2d = round(M2d*error_factor);
+    
+    correspondance = cell(3,1);
+    for v = 1:3
+        t = zeros(1,3);
+        t(v) = 1;
+        M = find_3drotation_by_brute_force(t, coeffs, num_samples);    
+        M = round(M*error_factor);
+        correspondance{v} = zeros(size(M));
+        for k = 1:numel(M)
+            if M(k) ~= 0
+                if M(k) == error_factor
+                    correspondance{v}(k) = -1;
+                else
+                    n = find(M2d == M(k),1,'first');
+%                     disp(n)
+                    correspondance{v}(k) = n;
+                end
+            end
+        end
+    end
+    
+    
+    %omg, endgame!
+    Ms = cell(3,1);
+    for n = 1:3
+        Ms{n} = zeros([num_adds, 3, size(M)]);
+        for k = 1:numel(M)
+            if correspondance{n}(k) == -1;
+                Ms{n}(1,:,k) = [1, 0, 0];
+            elseif correspondance{n}(k) ~= 0;
+                Ms{n}(:,:,k) = rotM2d(:,:,correspondance{n}(k));
+            end
+        end
+        Ms{n} = permute(Ms{n}, [3 4 2 1]);
+    end
+    
+    
+    
 end
         
 
-function M = find_rotation_by_brute_force(theta, coeffs, num_samples)
+function M = find_2drotation_by_brute_force(theta, coeffs, num_samples)
     
     moment_length = size(coeffs,1);
     
@@ -107,6 +149,35 @@ function M = find_rotation_by_brute_force(theta, coeffs, num_samples)
             invec(:,k) = invec(:,k) + r(1).^coeffs(:,1) .* r(2).^coeffs(:,2);
             r = Q*r;
             outvec(:,k) = outvec(:,k) + r(1).^coeffs(:,1) .* r(2).^coeffs(:,2);
+        end
+    end
+    
+    invec = invec/num_samples;
+    outvec = outvec/num_samples;
+        
+        %M*iv = ov
+    M = outvec / invec;
+end
+
+function M = find_3drotation_by_brute_force(t, coeffs, num_samples)
+    
+    moment_length = size(coeffs,1);
+    
+    Q = [1 0 0; 0 cos(t(3)) -sin(t(3)); 0 sin(t(3)) cos(t(3))] * ...
+    [cos(t(1)) -sin(t(1)) 0; sin(t(1)) cos(t(1)) 0; 0 0 1] * ...
+    [cos(t(2)) 0 sin(t(2)); 0 1 0; -sin(t(2)) 0 cos(t(2))];
+    
+    
+    invec = zeros(moment_length, moment_length);
+    outvec = zeros(moment_length, moment_length);
+
+    
+    for k = 1:moment_length
+        for l = 1:num_samples
+            r = randn(3,1);
+            invec(:,k) = invec(:,k) + r(1).^coeffs(:,1) .* r(2).^coeffs(:,2) .* r(3).^coeffs(:,3);
+            r = Q*r;
+            outvec(:,k) = outvec(:,k) + r(1).^coeffs(:,1) .* r(2).^coeffs(:,2) .* r(3).^coeffs(:,3);
         end
     end
     
