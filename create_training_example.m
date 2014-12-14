@@ -106,7 +106,7 @@ function create_training_example(cube_number, object_number)
     disp(num_segs);
 %     disp(find(seg_is_in));
     
-    edge_mat = zeros(num_segs+1, num_segs+1, 4); %total aff, min aff, max aff, count, edge_num
+    edge_mat = zeros(num_segs+1, num_segs+1, 7); %total aff, min aff, max aff, count, edge_num
     edge_mat(:,:,2) = Inf;
     
     nhood = -eye(3);
@@ -120,6 +120,9 @@ function create_training_example(cube_number, object_number)
                     edge_mat(id1+1, id2+1, 2) = min(edge_mat(id1+1, id2+1, 2), aff(x,y,z,n));
                     edge_mat(id1+1, id2+1, 3) = max(edge_mat(id1+1, id2+1, 3), aff(x,y,z,n));
                     edge_mat(id1+1, id2+1, 4) = edge_mat(id1+1, id2+1, 4) + 1;
+                    edge_mat(id1+1, id2+1, 5) = edge_mat(id1+1, id2+1, 5) + x+nhood(n,1)/2;
+                    edge_mat(id1+1, id2+1, 6) = edge_mat(id1+1, id2+1, 6) + y+nhood(n,2)/2;
+                    edge_mat(id1+1, id2+1, 7) = edge_mat(id1+1, id2+1, 7) + z+nhood(n,3)/2;
                 end
             end
         end
@@ -127,10 +130,12 @@ function create_training_example(cube_number, object_number)
     
 %     disp(size(edge_mat));
     
-    edge_mat(:,:,1) = edge_mat(:,:,1) + edge_mat(:,:,1)';
+%     edge_mat(:,:,1) = edge_mat(:,:,1) + edge_mat(:,:,1)';
     edge_mat(:,:,2) = min(cat(3, edge_mat(:,:,2), edge_mat(:,:,2)'), [], 3);
     edge_mat(:,:,3) = max(cat(3, edge_mat(:,:,3), edge_mat(:,:,3)'), [], 3);
-    edge_mat(:,:,4) = edge_mat(:,:,4) + edge_mat(:,:,4)';
+    for k = [1 4:7]
+        edge_mat(:,:,k) = edge_mat(:,:,k) + edge_mat(:,:,k)';
+    end
     
     edge_mat = edge_mat(2:end, 2:end, :);
     
@@ -150,6 +155,7 @@ function create_training_example(cube_number, object_number)
                 edge_data{num_edges}.max = edge_mat(x,y,3);
                 edge_data{num_edges}.count = edge_mat(x,y,4);
                 edge_data{num_edges}.members = [x y];
+                edge_data{num_edges}.com = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
                 edge_data{num_edges}.is_correct = seg_is_in(x) && seg_is_in(y);
             end
         end
