@@ -89,14 +89,16 @@ function Ms = find_moment_rotation_matrices()
     coeffs = coefficient_powers(3, C.moment_depth_generation);
     
     
-    M2d = find_2drotation_by_brute_force(1, coeffs2d, num_samples);
-    error_factor = 10000;
+    sample_theta = .6;
+    
+    M2d = find_2drotation_by_brute_force(sample_theta, coeffs2d, num_samples);
+    error_factor = 100000;
     M2d = round(M2d*error_factor);
     
     correspondance = cell(3,1);
     for v = 1:3
         t = zeros(1,3);
-        t(v) = 1;
+        t(v) = sample_theta;
         M = find_3drotation_by_brute_force(t, coeffs, num_samples);    
         M = round(M*error_factor);
         correspondance{v} = zeros(size(M));
@@ -129,6 +131,13 @@ function Ms = find_moment_rotation_matrices()
     end
     
     
+    %test
+%     M = zeros(length(v));
+%     for k = 1:size(Ms{1}, 4);
+%         M = M + Ms{n}(:,:,1,k) .* ...
+%             (sin(thetas(n)).^Ms{n}(:,:,2,k)) .* ...
+%             (cos(thetas(n)).^Ms{n}(:,:,3,k));
+%     end
     
 end
         
@@ -163,23 +172,8 @@ function M = find_3drotation_by_brute_force(t, coeffs, num_samples)
     
     moment_length = size(coeffs,1);
     
-    Q = [1 0 0; 0 cos(t(3)) -sin(t(3)); 0 sin(t(3)) cos(t(3))] * ...
-    [cos(t(1)) -sin(t(1)) 0; sin(t(1)) cos(t(1)) 0; 0 0 1] * ...
-    [cos(t(2)) 0 sin(t(2)); 0 1 0; -sin(t(2)) 0 cos(t(2))];
-    
-    
-    invec = zeros(moment_length, moment_length);
-    outvec = zeros(moment_length, moment_length);
+    [invec, vt, outvec] = generate_sample_vector(moment_length, num_samples, [0; 0; 0], t);
 
-    
-    for k = 1:moment_length
-        for l = 1:num_samples
-            r = randn(3,1);
-            invec(:,k) = invec(:,k) + r(1).^coeffs(:,1) .* r(2).^coeffs(:,2) .* r(3).^coeffs(:,3);
-            r = Q*r;
-            outvec(:,k) = outvec(:,k) + r(1).^coeffs(:,1) .* r(2).^coeffs(:,2) .* r(3).^coeffs(:,3);
-        end
-    end
     
     invec = invec/num_samples;
     outvec = outvec/num_samples;
