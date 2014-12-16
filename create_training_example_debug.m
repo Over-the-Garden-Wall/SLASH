@@ -1,58 +1,76 @@
 function create_training_example(cube_number, object_number)
-
+% 
     if ~exist('object_number', 'var')
         object_number = 'rand';
         
     end
-    
+%     
     C = lash_constants;
     
-    vol_dir = [C.cube_dir 'x' format_num(cube_number(1),2) '/y' format_num(cube_number(2),2) '/'];
+%     vol_dir = [C.cube_dir 'x' format_num(cube_number(1),2) '/y' format_num(cube_number(2),2) '/'];
+%     
+%     disp(vol_dir);
+%     
+%     vol_files = dir(vol_dir);
+%     
+%     fn_start = ['x' format_num(cube_number(1),2) 'y' format_num(cube_number(2),2) 'z' format_num(cube_number(3),2)];
+%     vol_fn = [];
+%     for n = 1:length(vol_files);
+%         if length(vol_files(n).name) > length(fn_start) && strcmp(vol_files(n).name(1:length(fn_start)), fn_start)
+%             vol_fn = vol_files(n).name;
+%         end
+%     end
+%     
+%     disp(vol_fn);
+%     
+%     if isempty(vol_fn)
+%         error(['volume not found in ' vol_dir]);
+%     end
+%     
+%     if ~strcmp(vol_fn(end-5:end), '.files')
+%         vol_fn = [vol_fn '.files'];
+%     end
+%     
+%     segmentation_fn = [vol_dir vol_fn '/segmentations/segmentation1/0/volume.uint32_t.raw'];
+%     
+%     
+%     
+%     fid = fopen(segmentation_fn, 'r');
+%     seg = fread(fid,'uint32');
+%     fclose(fid);
     
-    disp(vol_dir);
+%     seg = omniwebcube2im(seg);
     
-    vol_files = dir(vol_dir);
+    imSz = [60 60 60];
+
+    seg = zeros(imSz);
     
-    fn_start = ['x' format_num(cube_number(1),2) 'y' format_num(cube_number(2),2) 'z' format_num(cube_number(3),2)];
-    vol_fn = [];
-    for n = 1:length(vol_files);
-        if length(vol_files(n).name) > length(fn_start) && strcmp(vol_files(n).name(1:length(fn_start)), fn_start)
-            vol_fn = vol_files(n).name;
-        end
-    end
+    seg(20:24, 20:25, 50:52) = 1;
+    seg(20:24, 20:25, 53:55) = 2;
+    seg(25, 20:25, 50:55) = 3;
+    seg(19, 20, 50) = 4;    
+    seg(7:10, 20:25, 50:55) = 5;    
     
-    disp(vol_fn);
-    
-    if isempty(vol_fn)
-        error(['volume not found in ' vol_dir]);
-    end
-    
-    if ~strcmp(vol_fn(end-5:end), '.files')
-        vol_fn = [vol_fn '.files'];
-    end
-    
-    segmentation_fn = [vol_dir vol_fn '/segmentations/segmentation1/0/volume.uint32_t.raw'];
-    
-    imSz = [256 256 256];
-    
-    fid = fopen(segmentation_fn, 'r');
-    seg = fread(fid,'uint32');
-    fclose(fid);
-    
-    seg = omniwebcube2im(seg);
-    
-    us_loc = find(vol_fn=='_');
-    us_loc(end+1) = find(vol_fn == '.', 1, 'first');
-    
-    vol_coords = [str2double(vol_fn(us_loc(1)+2:us_loc(2)-1)), ...
-        str2double(vol_fn(us_loc(2)+1:us_loc(3)-1)), ...
-        str2double(vol_fn(us_loc(3)+1:us_loc(4)-1)); ...
-        str2double(vol_fn(us_loc(4)+2:us_loc(5)-1)), ...
-        str2double(vol_fn(us_loc(5)+1:us_loc(6)-1)), ...
-        str2double(vol_fn(us_loc(6)+1:us_loc(7)-1))];
-        
-    lbl = get_label(vol_coords);
-    aff = get_affinity(vol_coords);
+    object_number = 1;
+%     
+%     us_loc = find(vol_fn=='_');
+%     us_loc(end+1) = find(vol_fn == '.', 1, 'first');
+%     
+%     vol_coords = [str2double(vol_fn(us_loc(1)+2:us_loc(2)-1)), ...
+%         str2double(vol_fn(us_loc(2)+1:us_loc(3)-1)), ...
+%         str2double(vol_fn(us_loc(3)+1:us_loc(4)-1)); ...
+%         str2double(vol_fn(us_loc(4)+2:us_loc(5)-1)), ...
+%         str2double(vol_fn(us_loc(5)+1:us_loc(6)-1)), ...
+%         str2double(vol_fn(us_loc(6)+1:us_loc(7)-1))];
+%         
+%     lbl = get_label(vol_coords);
+
+    lbl = zeros(size(seg));
+    lbl(20:24, 20:25, 50:55) = 1;
+
+
+    aff = rand([imSz,3]);
+%     aff = get_affinity(vol_coords);
 %     save('../debug.mat','lbl', 'seg', 'aff');
     
     
@@ -120,9 +138,9 @@ function create_training_example(cube_number, object_number)
                     edge_mat(id1+1, id2+1, 2) = min(edge_mat(id1+1, id2+1, 2), aff(x,y,z,n));
                     edge_mat(id1+1, id2+1, 3) = max(edge_mat(id1+1, id2+1, 3), aff(x,y,z,n));
                     edge_mat(id1+1, id2+1, 4) = edge_mat(id1+1, id2+1, 4) + 1;
-                    edge_mat(id1+1, id2+1, 5) = edge_mat(id1+1, id2+1, 5) + (x+nhood(n,1)/2)/imSz(1)*4-2;
-                    edge_mat(id1+1, id2+1, 6) = edge_mat(id1+1, id2+1, 6) + (y+nhood(n,2)/2)/imSz(2)*4-2;
-                    edge_mat(id1+1, id2+1, 7) = edge_mat(id1+1, id2+1, 7) + (z+nhood(n,3)/2)/imSz(3)*4-2;
+                    edge_mat(id1+1, id2+1, 5) = edge_mat(id1+1, id2+1, 5) + x+nhood(n,1)/2;
+                    edge_mat(id1+1, id2+1, 6) = edge_mat(id1+1, id2+1, 6) + y+nhood(n,2)/2;
+                    edge_mat(id1+1, id2+1, 7) = edge_mat(id1+1, id2+1, 7) + z+nhood(n,3)/2;
                 end
             end
         end
@@ -181,7 +199,14 @@ function create_training_example(cube_number, object_number)
     original_ids = all_segs(in_and_adjacent_segs);
     num_segs = length(in_and_adjacent_segs);
     
-    coeffs = coefficient_powers(3, C.moment_depth_generation);
+    coeffs = [];
+    for k = 1:C.moment_depth_generation
+        kcoeffs = [];
+        [kcoeffs(:,1), kcoeffs(:,2), kcoeffs(:,3)] = ind2sub((1+k)*ones(1,3), 1:(k+1)^3);
+        kcoeffs = kcoeffs-1;
+        kcoeffs = kcoeffs(sum(kcoeffs,2)==k,:);
+        coeffs = [coeffs; kcoeffs];
+    end
     
     
 %     disp(coeffs)
