@@ -213,7 +213,11 @@ function create_training_example(cube_number, object_number)
         segments{k}.is_in = true;
     end
     
-    save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
+    save([C.training_dir ...
+        '/cube_' num2str(cube_number(1)) '_' num2str(cube_number(2)) '_' num2str(cube_number(1)), ...
+        '_object' num2str(object_number)], 'segments', 'edge_data');
+        
+%     save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
     
 end
 
@@ -228,7 +232,7 @@ function [im, seg_order] = condense_im(im, values)
     max_val = max(values);
     seg_order = zeros(max_val,1);
     
-    for k = 1:length(values)        
+    for k = 1:length(values)
         seg_order(values(k)) = k;
     end
     
