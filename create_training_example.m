@@ -111,8 +111,8 @@ function create_training_example(cube_number, object_number)
     edge_mat(:,:,2) = Inf;
     
     
-    toc
-    tic; disp('115 loop');
+%     toc
+%     tic; disp('115 loop');
     
     nhood = -eye(3);
     for x = 2:imSz(1)
@@ -146,9 +146,11 @@ function create_training_example(cube_number, object_number)
     
     
     toc
-    tic; disp('150 loop');
+%     tic; disp('150 loop');
     
 
+    
+    
     
     
     
@@ -167,7 +169,7 @@ function create_training_example(cube_number, object_number)
     edge_data.members = zeros(num_edges,2);
     edge_data.is_correct = false(num_edges,1);
     
-    disp(['start t loop, edges: ' num2str(num_edges)]);
+%     disp(['start t loop, edges: ' num2str(num_edges)]);
     
     for t = 1:num_edges
         x = xs(t);
@@ -178,7 +180,7 @@ function create_training_example(cube_number, object_number)
         edge_data.max(t) = edge_mat(x,y,3);
         edge_data.count(t) = edge_mat(x,y,4);
         edge_data.members(t,:) = [x y];
-        edge_data.com(t,:) = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
+        edge_data.com(t,:) = squeeze(edge_mat(x,y,5:7))/edge_data.count(t);
         edge_data.is_correct(t) = seg_is_in(x) && seg_is_in(y);
     end
     
@@ -200,15 +202,15 @@ function create_training_example(cube_number, object_number)
 %         end
 %     end
                     
-    disp('loop done');
+%     disp('loop done');
     
     in_and_adjacent_segs = unique( edge_data.members(:));
     
-    disp('condensing')
+%     disp('condensing')
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
     
-        disp('remapping')
+%         disp('remapping')
     
         edge_data.members = remap(edge_data.members);
     
@@ -222,15 +224,21 @@ function create_training_example(cube_number, object_number)
 
 
     
-    toc
-    tic; disp('200 loop');
+%     toc
+%     tic; disp('200 loop');
+%     
+%     segments = cell(num_segs,1);
+%     for n = 1:num_segs
+%         segments{n}.moments = zeros(size(coeffs,1),1);
+%         segments{n}.size = 0;
+%         segments{n}.original_id = original_ids(n);
+%     end
     
-    segments = cell(num_segs,1);
-    for n = 1:num_segs
-        segments{n}.moments = zeros(size(coeffs,1),1);
-        segments{n}.size = 0;
-        segments{n}.original_id = original_ids(n);
-    end
+    segments.moments = zeros(num_segs, size(coeffs,1));
+    segments.size = zeros(num_segs, 1);
+    segments.original_id = zeros(num_segs, 1);
+    segments.is_in = false(num_segs,1);
+    
         
     for x = 1:imSz(1)
         for y = 1:imSz(2)
@@ -238,19 +246,16 @@ function create_training_example(cube_number, object_number)
                 if seg(x,y,z) ~= 0
                     k = seg(x,y,z);
                     
-                    segments{k}.moments = segments{k}.moments + ...
-                        (x/imSz(1)*4-2).^coeffs(:,1) .* (y/imSz(2)*4-2).^coeffs(:,2) .* (z/imSz(3)*4-2).^coeffs(:,3);
-                    segments{k}.size = segments{k}.size + 1;
-                    segments{k}.is_in = false;
+                    segments.moments(k,:) = segments.moments(k,:) + ...
+                        ((x/imSz(1)*4-2).^coeffs(:,1) .* (y/imSz(2)*4-2).^coeffs(:,2) .* (z/imSz(3)*4-2).^coeffs(:,3))';
+                    segments.size(k) = segments.size(k) + 1;
                 end
             end
         end
     end
     
     newer_in_segs = remap(new_in_segs);
-    for k = newer_in_segs'
-        segments{k}.is_in = true;
-    end
+    segments.is_in(newer_in_segs) = true;
     
     toc
     save([C.training_dir ...
