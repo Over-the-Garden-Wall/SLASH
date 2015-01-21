@@ -148,7 +148,8 @@ function create_training_example(cube_number, object_number)
     toc
     tic; disp('150 loop');
     
-    
+    disp(size(edge_mat));
+
     edge_data = cell(10000,1);    
     num_edges = 0;
     for x = 1:size(edge_mat,1)
@@ -168,6 +169,8 @@ function create_training_example(cube_number, object_number)
         end
     end
                     
+    disp('loop done');
+    
     edge_data = edge_data(1:num_edges);
     
     in_and_adjacent_segs = zeros(1,num_edges*2);
@@ -176,8 +179,11 @@ function create_training_example(cube_number, object_number)
     end
     in_and_adjacent_segs = unique(in_and_adjacent_segs);
     
+    disp('condensing')
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
+    
+        disp('remapping')
     
     for k = 1:num_edges
 %         disp(edge_data{k}.members)
