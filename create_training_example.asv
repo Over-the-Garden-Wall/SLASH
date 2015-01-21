@@ -1,5 +1,7 @@
 function create_training_example(cube_number, object_number)
 
+    tic; disp('begin');
+
     if ~exist('object_number', 'var')
         object_number = 'rand';
         
@@ -94,7 +96,7 @@ function create_training_example(cube_number, object_number)
     
     in_segs = unique(seg(lbl_code == size(nhood,1)));
     in_segs(in_segs==0) = [];
-    disp(in_segs);
+   
     
     [seg, initial_condense] = condense_im(seg, all_segs);
     
@@ -103,11 +105,14 @@ function create_training_example(cube_number, object_number)
     seg_is_in = false(num_segs,1);
     seg_is_in(new_in_segs) = true;
     
-    disp(num_segs);
 %     disp(find(seg_is_in));
     
     edge_mat = zeros(num_segs+1, num_segs+1, 7); %total aff, min aff, max aff, count, edge_num
     edge_mat(:,:,2) = Inf;
+    
+    
+    toc
+    tic; disp('115 loop');
     
     nhood = -eye(3);
     for x = 2:imSz(1)
@@ -140,39 +145,56 @@ function create_training_example(cube_number, object_number)
     edge_mat = edge_mat(2:end, 2:end, :);
     
     
+    toc
+    tic; disp('150 loop');
+    
+    disp(size(edge_mat));
+
+    
+    
+    
+    is_good_edge = (edge_mat(x,y,4)>0) & (seg_is_in *ones(1,length(seg_is_in)) | ones(length(seg_is_in),1)*seg_is_in');
+    is_good_edge = triu(is_good_edge);
+    good_edge_list = find(is_good_edge(:));
+    [x y] = ind2sub(good_edge_list
     
     
     edge_data = cell(10000,1);    
-    num_edges = 0;
-    for x = 1:size(edge_mat,1)
-%         disp(x)
-        for y = x+1:size(edge_mat,2)
-            if edge_mat(x,y,4)>0 && (seg_is_in(x) || seg_is_in(y))
-%                 disp([x y seg_is_in(x) seg_is_in(y)]);
-                num_edges = num_edges+1;
-                edge_data{num_edges}.total = edge_mat(x,y,1);
-                edge_data{num_edges}.min = edge_mat(x,y,2);
-                edge_data{num_edges}.max = edge_mat(x,y,3);
-                edge_data{num_edges}.count = edge_mat(x,y,4);
-                edge_data{num_edges}.members = [x y];
-                edge_data{num_edges}.com = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
-                edge_data{num_edges}.is_correct = seg_is_in(x) && seg_is_in(y);
-            end
-        end
-    end
-                    
-    edge_data = edge_data(1:num_edges);
-    
-    disp(num_edges)
 
+    
+    
+%     for x = 1:size(edge_mat,1)
+% %         disp(x)
+%         for y = x+1:size(edge_mat,2)
+%             if edge_mat(x,y,4)>0 && (seg_is_in(x) || seg_is_in(y))
+% %                 disp([x y seg_is_in(x) seg_is_in(y)]);
+%                 num_edges = num_edges+1;
+%                 edge_data{num_edges}.total = edge_mat(x,y,1);
+%                 edge_data{num_edges}.min = edge_mat(x,y,2);
+%                 edge_data{num_edges}.max = edge_mat(x,y,3);
+%                 edge_data{num_edges}.count = edge_mat(x,y,4);
+%                 edge_data{num_edges}.members = [x y];
+%                 edge_data{num_edges}.com = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
+%                 edge_data{num_edges}.is_correct = seg_is_in(x) && seg_is_in(y);
+%             end
+%         end
+%     end
+                    
+    disp('loop done');
+    
+%     edge_data = edge_data(1:num_edges);
+    
     in_and_adjacent_segs = zeros(1,num_edges*2);
     for k = 1:num_edges
         in_and_adjacent_segs((k-1)*2 + (1:2)) = edge_data{k}.members;
     end
     in_and_adjacent_segs = unique(in_and_adjacent_segs);
     
+    disp('condensing')
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
     [seg remap] = condense_im(seg, in_and_adjacent_segs);
+    
+        disp('remapping')
     
     for k = 1:num_edges
 %         disp(edge_data{k}.members)
@@ -185,6 +207,11 @@ function create_training_example(cube_number, object_number)
     
     
 %     disp(coeffs)
+
+
+    
+    toc
+    tic; disp('200 loop');
     
     segments = cell(num_segs,1);
     for n = 1:num_segs
@@ -213,7 +240,13 @@ function create_training_example(cube_number, object_number)
         segments{k}.is_in = true;
     end
     
-    save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
+    toc
+    save([C.training_dir ...
+        '/cube_' num2str(cube_number(1)) '_' num2str(cube_number(2)) '_' num2str(cube_number(1)), ...
+        '_object' num2str(object_number)], 'segments', 'edge_data');
+       
+    disp('end');
+%     save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
     
 end
 

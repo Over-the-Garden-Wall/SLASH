@@ -148,30 +148,56 @@ function create_training_example(cube_number, object_number)
     toc
     tic; disp('150 loop');
     
-    disp(size(edge_mat));
 
-    edge_data = cell(10000,1);    
-    num_edges = 0;
-    for x = 1:size(edge_mat,1)
-%         disp(x)
-        for y = x+1:size(edge_mat,2)
-            if edge_mat(x,y,4)>0 && (seg_is_in(x) || seg_is_in(y))
-%                 disp([x y seg_is_in(x) seg_is_in(y)]);
-                num_edges = num_edges+1;
-                edge_data{num_edges}.total = edge_mat(x,y,1);
-                edge_data{num_edges}.min = edge_mat(x,y,2);
-                edge_data{num_edges}.max = edge_mat(x,y,3);
-                edge_data{num_edges}.count = edge_mat(x,y,4);
-                edge_data{num_edges}.members = [x y];
-                edge_data{num_edges}.com = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
-                edge_data{num_edges}.is_correct = seg_is_in(x) && seg_is_in(y);
-            end
-        end
+    
+    
+    
+    is_good_edge = (edge_mat(x,y,4)>0) & (seg_is_in *ones(1,length(seg_is_in)) | ones(length(seg_is_in),1)*seg_is_in');
+    is_good_edge = triu(is_good_edge);
+    good_edge_list = find(is_good_edge(:));
+    [xs ys] = ind2sub(size(is_good_edge), good_edge_list);
+
+    num_edges = length(good_edge_list);
+    edge_data = cell(num_edges,1);    
+
+    disp(['start t loop, edges: ' num2str(num_edges)]);
+    
+    for t = 1:num_edges
+        x = xs(t);
+        y = ys(t);
+        
+        edge_data{t}.total = edge_mat(x,y,1);
+        edge_data{t}.min = edge_mat(x,y,2);
+        edge_data{t}.max = edge_mat(x,y,3);
+        edge_data{t}.count = edge_mat(x,y,4);
+        edge_data{t}.members = [x y];
+        edge_data{t}.com = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
+        edge_data{t}.is_correct = seg_is_in(x) && seg_is_in(y);
     end
+    
+
+    
+    
+%     for x = 1:size(edge_mat,1)
+% %         disp(x)
+%         for y = x+1:size(edge_mat,2)
+%             if edge_mat(x,y,4)>0 && (seg_is_in(x) || seg_is_in(y))
+% %                 disp([x y seg_is_in(x) seg_is_in(y)]);
+%                 num_edges = num_edges+1;
+%                 edge_data{num_edges}.total = edge_mat(x,y,1);
+%                 edge_data{num_edges}.min = edge_mat(x,y,2);
+%                 edge_data{num_edges}.max = edge_mat(x,y,3);
+%                 edge_data{num_edges}.count = edge_mat(x,y,4);
+%                 edge_data{num_edges}.members = [x y];
+%                 edge_data{num_edges}.com = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
+%                 edge_data{num_edges}.is_correct = seg_is_in(x) && seg_is_in(y);
+%             end
+%         end
+%     end
                     
     disp('loop done');
     
-    edge_data = edge_data(1:num_edges);
+%     edge_data = edge_data(1:num_edges);
     
     in_and_adjacent_segs = zeros(1,num_edges*2);
     for k = 1:num_edges
