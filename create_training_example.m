@@ -1,5 +1,7 @@
 function create_training_example(cube_number, object_number)
 
+    tic; disp('begin');
+
     if ~exist('object_number', 'var')
         object_number = 'rand';
         
@@ -94,7 +96,7 @@ function create_training_example(cube_number, object_number)
     
     in_segs = unique(seg(lbl_code == size(nhood,1)));
     in_segs(in_segs==0) = [];
-    disp(in_segs);
+   
     
     [seg, initial_condense] = condense_im(seg, all_segs);
     
@@ -103,11 +105,14 @@ function create_training_example(cube_number, object_number)
     seg_is_in = false(num_segs,1);
     seg_is_in(new_in_segs) = true;
     
-    disp(num_segs);
 %     disp(find(seg_is_in));
     
     edge_mat = zeros(num_segs+1, num_segs+1, 7); %total aff, min aff, max aff, count, edge_num
     edge_mat(:,:,2) = Inf;
+    
+    
+    toc
+    tic; disp('115 loop');
     
     nhood = -eye(3);
     for x = 2:imSz(1)
@@ -140,6 +145,8 @@ function create_training_example(cube_number, object_number)
     edge_mat = edge_mat(2:end, 2:end, :);
     
     
+    toc
+    tic; disp('150 loop');
     
     
     edge_data = cell(10000,1);    
@@ -163,8 +170,6 @@ function create_training_example(cube_number, object_number)
                     
     edge_data = edge_data(1:num_edges);
     
-    disp(num_edges)
-
     in_and_adjacent_segs = zeros(1,num_edges*2);
     for k = 1:num_edges
         in_and_adjacent_segs((k-1)*2 + (1:2)) = edge_data{k}.members;
@@ -185,6 +190,11 @@ function create_training_example(cube_number, object_number)
     
     
 %     disp(coeffs)
+
+
+    
+    toc
+    tic; disp('200 loop');
     
     segments = cell(num_segs,1);
     for n = 1:num_segs
@@ -213,10 +223,12 @@ function create_training_example(cube_number, object_number)
         segments{k}.is_in = true;
     end
     
+    toc
     save([C.training_dir ...
         '/cube_' num2str(cube_number(1)) '_' num2str(cube_number(2)) '_' num2str(cube_number(1)), ...
         '_object' num2str(object_number)], 'segments', 'edge_data');
-        
+       
+    disp('end');
 %     save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
     
 end
