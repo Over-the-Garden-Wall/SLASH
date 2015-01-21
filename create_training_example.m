@@ -158,24 +158,29 @@ function create_training_example(cube_number, object_number)
     [xs ys] = ind2sub(size(is_good_edge), good_edge_list);
 
     num_edges = length(good_edge_list);
-    edge_data = cell(num_edges,1);    
-
+    
+    edge_data.total = zeros(num_edges,1);
+    edge_data.min = zeros(num_edges,1);
+    edge_data.max = zeros(num_edges,1);
+    edge_data.count = zeros(num_edges,1);
+    edge_data.com = zeros(num_edges,3);
+    edge_data.members = zeros(num_edges,2);
+    edge_data.is_correct = false(num_edges,1);
+    
     disp(['start t loop, edges: ' num2str(num_edges)]);
     
     for t = 1:num_edges
         x = xs(t);
         y = ys(t);
         
-        edge_data{t}.total = edge_mat(x,y,1);
-        edge_data{t}.min = edge_mat(x,y,2);
-        edge_data{t}.max = edge_mat(x,y,3);
-        edge_data{t}.count = edge_mat(x,y,4);
-        edge_data{t}.members = [x y];
-        edge_data{t}.com = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
-        edge_data{t}.is_correct = seg_is_in(x) && seg_is_in(y);
+        edge_data.total(t) = edge_mat(x,y,1);
+        edge_data.min(t) = edge_mat(x,y,2);
+        edge_data.max(t) = edge_mat(x,y,3);
+        edge_data.count(t) = edge_mat(x,y,4);
+        edge_data.members(t,:) = [x y];
+        edge_data.com(t,:) = squeeze(edge_mat(:,:,5:7))/edge_data{num_edges}.count;
+        edge_data.is_correct(t) = seg_is_in(x) && seg_is_in(y);
     end
-    
-
     
     
 %     for x = 1:size(edge_mat,1)
