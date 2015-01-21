@@ -202,13 +202,7 @@ function create_training_example(cube_number, object_number)
                     
     disp('loop done');
     
-%     edge_data = edge_data(1:num_edges);
-    
-    in_and_adjacent_segs = zeros(1,num_edges*2);
-    for k = 1:num_edges
-        in_and_adjacent_segs((k-1)*2 + (1:2)) = edge_data{k}.members;
-    end
-    in_and_adjacent_segs = unique(in_and_adjacent_segs);
+    in_and_adjacent_segs = unique( edge_data.members(:));
     
     disp('condensing')
 %     save('../debug.mat','lbl', 'seg', 'aff', 'new_in_segs', 'edge_data', 'edge_mat');
@@ -216,11 +210,9 @@ function create_training_example(cube_number, object_number)
     
         disp('remapping')
     
-    for k = 1:num_edges
-%         disp(edge_data{k}.members)
-        edge_data{k}.members = remap(edge_data{k}.members);
-    end
-    original_ids = all_segs(in_and_adjacent_segs);
+        edge_data.members = remap(edge_data.members);
+    
+        original_ids = all_segs(in_and_adjacent_segs);
     num_segs = length(in_and_adjacent_segs);
     
     coeffs = coefficient_powers(3, C.moment_depth_generation);
