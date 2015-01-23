@@ -40,7 +40,8 @@ function M = find_moment_translation_function()
         M(:,:,n) = log(M(:,:,n)./M(:,:,4)) / log(2);        
     end   
 %     
-%     M(isnan(M)) = 0;
+    M(isnan(M)) = 0;
+    M(end,:,:) = [];
 %     
 %     disp(unique(M(:)));
 %     
