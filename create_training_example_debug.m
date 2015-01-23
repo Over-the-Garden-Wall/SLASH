@@ -168,7 +168,7 @@ function create_training_example(cube_number, object_number)
     
     
     
-    is_good_edge = (edge_mat(x,y,4)>0) & (seg_is_in *ones(1,length(seg_is_in)) | ones(length(seg_is_in),1)*seg_is_in');
+    is_good_edge = (edge_mat(:,:,4)>0) & (seg_is_in *ones(1,length(seg_is_in)) | ones(length(seg_is_in),1)*seg_is_in');
     is_good_edge = triu(is_good_edge);
     good_edge_list = find(is_good_edge(:));
     [xs ys] = ind2sub(size(is_good_edge), good_edge_list);
