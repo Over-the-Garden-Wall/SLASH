@@ -63,13 +63,7 @@ function create_training_example(cube_number, object_number)
     seg = zeros(imSz);
     for k = 1:27;
         [x y z] = ind2sub([3 3 3], k);
-        seg(x*20 + (1:20), y*20 + (1:20), z*20 + (1:20)) = k;
-    end
-    
-    lbl = seg == 5 | seg == 14 | seg == 23;
-    lbl = lbl+1-1;
-    
-    aff = .5*ones([imSz 3]);
+        seg(x
 
     
     lbl_ids = unique(lbl(:));
@@ -272,10 +266,12 @@ function create_training_example(cube_number, object_number)
     segments.is_in(newer_in_segs) = true;
     
     toc
-%     save('../da, 'segments', 'edge_data');
+    save([C.training_dir ...
+        '/cube_' num2str(cube_number(1)) '_' num2str(cube_number(2)) '_' num2str(cube_number(1)), ...
+        '_object' num2str(object_number)], 'segments', 'edge_data');
        
     disp('end');
-    save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
+%     save('../debug.mat','lbl', 'seg', 'aff', 'segments', 'edge_data');
     
 end
 
