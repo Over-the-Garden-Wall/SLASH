@@ -154,15 +154,13 @@ function SLASH_training(varargin)
                     shared_edges_list = find(shared_edges);
                     
                     for k = 1:length(shared_edges_list);
-                        edge_data = merge_edge_data(edge_data, neighbors(shared_edges_list(k)), new_neighbors(shared_edges_list(k))); %TODO
+                        edge_data = merge_edge_data(edge_data, neighbors(shared_edges_list(k)), new_neighbors(shared_edges_list(k)));                        
                     end
                     
-                    segments = merge_segments(segments, seed_pick, to_merge); %TODO
-                    seed_group = [seed_group; to_merge];
+                    segments = merge_segments(segments, seed_pick, to_merge);
                     
                     neighbor_mat_copy(:, to_merge) = 0;
                     neighbor_mat_copy(to_merge, shared_edges) = 0;
-                    neighbor_mat_copy(seed_pick, :) = neighbor_mat_copy(seed_pick, :) + neighbor_mat_copy(to_merge, :);
                 end
                     
                 
