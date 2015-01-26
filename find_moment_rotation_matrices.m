@@ -1,4 +1,4 @@
-function Ms = find_moment_rotation_matrices()
+function Ms = find_moment_rotation_matrices(dpth)
     %assumed that M is centered first.
     
     %going to have to find a n^2 x n? matrix N such that:
@@ -14,20 +14,20 @@ function Ms = find_moment_rotation_matrices()
 
     
     %find 2d rotation about z
-    coeffs2d = coefficient_powers(2, C.moment_depth_generation);
+    coeffs2d = coefficient_powers(2, dpth);
     coeff_order = sum(coeffs2d,2);
     
     order_mat = zeros(length(coeff_order));
     
-    for n = 1:C.moment_depth_generation
+    for n = 1:dpth
         order_mat = order_mat + ((coeff_order==n)*n)*(coeff_order==n)';
     end
     
     num_samples = 2;
 
-    temp_mats = cell(C.moment_depth_generation,1);
+    temp_mats = cell(dpth,1);
     
-    for n = 1:C.moment_depth_generation
+    for n = 1:dpth
         tic
         num_M_of_order = sum(order_mat(:)==n);
         
@@ -56,13 +56,13 @@ function Ms = find_moment_rotation_matrices()
     
     
     num_adds = 0;
-    for n = 1:C.moment_depth_generation
+    for n = 1:dpth
         num_adds = max([num_adds; sum(temp_mats{n}~=0,2)]);
     end
     
     rotM2d = zeros([num_adds, 3, size(M)]);
     
-    for n = 1:C.moment_depth_generation
+    for n = 1:dpth
         %split into additions
         inds_in_M = find(order_mat==n);
         for k = 1:size(temp_mats{n},1)
@@ -86,7 +86,7 @@ function Ms = find_moment_rotation_matrices()
     
     %expand rotM2d to 3 3d matrices.
         
-    coeffs = coefficient_powers(3, C.moment_depth_generation);
+    coeffs = coefficient_powers(3, dpth);
     
     
     sample_theta = .6;

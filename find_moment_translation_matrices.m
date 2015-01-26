@@ -1,11 +1,11 @@
-function M = find_moment_translation_function()
+function M = find_moment_translation_matrices(dpth)
 
     %so it's t -> tv, tv -> M by a length(tv) x numel(M) matrix?
     
     
     C = lash_constants;
     
-    coeffs = coefficient_powers(3, C.moment_depth_generation);
+    coeffs = coefficient_powers(3, dpth);
     coeffs = [coeffs; 0 0 0];
     
     moment_length = size(coeffs,1);
