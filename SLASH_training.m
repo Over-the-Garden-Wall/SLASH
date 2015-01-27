@@ -135,8 +135,8 @@ function SLASH_training(varargin)
                         edge_data.min(nk), edge_data.count(nk), ...
                         moment_vec];
                 end
-                    todo
-                net_output = run_nn(nn, net_input); %TODO
+                    
+                net_output = run_nn(nn, net_input);
                 [best_val, best_ind] = max(net_output);                
                 to_merge = neighbor_list(best_ind);
                 
