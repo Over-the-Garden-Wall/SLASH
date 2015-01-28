@@ -172,7 +172,7 @@ function M = find_3drotation_by_brute_force(t, coeffs, num_samples)
     
     moment_length = size(coeffs,1);
     
-    [invec, vt, outvec] = generate_sample_vector(moment_length, num_samples, [0; 0; 0], t);
+    [invec, vt, outvec] = generate_sample_vector(moment_length, num_samples, [0; 0; 0], t, max(sum(coeffs,2)));
 
     
     invec = invec/num_samples;

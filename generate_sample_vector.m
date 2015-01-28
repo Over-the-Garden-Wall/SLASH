@@ -1,7 +1,11 @@
-function [v, vt, vr] = generate_sample_vector(num_vecs, samples_vec, translat, rotation_thetas)
+function [v, vt, vr] = generate_sample_vector(num_vecs, samples_vec, translat, rotation_thetas, dpth)
 
-    C = lash_constants;
-    cfs = coefficient_powers(3,C.moment_depth_generation);
+    if ~exist('dpth','var') || isempty(dpth)
+        C = lash_constants;
+        dpth = C.moment_generation_depth;
+    end
+
+    cfs = coefficient_powers(3,dpth);
     
     
     v = zeros(size(cfs,1), num_vecs);

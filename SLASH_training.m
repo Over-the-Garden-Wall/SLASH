@@ -15,6 +15,9 @@ function SLASH_training(varargin)
     ip.addParamValue('moment_depth', 2, @(x) isnumeric(x) && x<=C.moment_depth_generation);
     ip.addParamValue('save_frequency', 10, @(x) isnumeric(x));
     ip.addParamValue('lognormalize', true, @(x) islogical(x));
+    ip.addParamValue('network_size', [40 40 1], @(x) isnumeric(x));
+    ip.addParamValue('net', [], @(x) true);    
+    ip.addParamValue('max_training_iterations', Inf, @(x) isnumeric(x));    
     
        
     ip.parse(varargin{:});
@@ -25,10 +28,10 @@ function SLASH_training(varargin)
     moment_length = size(moment_coeffs,1);
     rotation_rules = find_moment_rotation_matrices(s.moment_depth);
     translation_rules = find_moment_translation_matrices(s.moment_depth);
-    
+    num_features = 4 + moment_length; 
     
     %get training data
-    dirs = C.training_dir;
+    dirs = dir(C.training_dir);
     is_valid_dir = false(length(dirs),1);
     training_fns = cell(length(dirs),1);
     
@@ -38,7 +41,7 @@ function SLASH_training(varargin)
             is_valid_dir(n) = true;
         end
     end
-    training_fns = sample_fns(is_valid_dir);
+    training_fns = training_fns(is_valid_dir);
     
     num_training_files = length(training_fns);    
     
@@ -49,11 +52,15 @@ function SLASH_training(varargin)
     
     
     %initialize network
-    nn = []; %TODO
+    if isempty(s.net)
+        nn = create_neural_network([num_features s.network_size]);
+    else
+        load(s.net);
+    end
     
     
     %initialize recording
-    
+    sample_results = zeros(s.num_samples, 5); %[is_test, num_attempts, max_correct, num_merges, did_quit];
     
     
     
@@ -61,6 +68,8 @@ function SLASH_training(varargin)
         %prep sample
         file_pick = ceil(rand*num_training_files);
         is_test_file = is_test(file_pick);
+        sample_results(n,1) = is_test_file;
+        
         load([C.training_dir training_fns{file_pick}]);
         initial_segments = segments;
         initial_edge_data = edge_data;
@@ -85,23 +94,28 @@ function SLASH_training(varargin)
         while 1
             neighbors = false(size(neighbor_mat,1),1);
             for k = 1:length(truth_group);
-                neighbors = neighbors | neighbor_mat_copy(:, truth_group(k));
+                neighbors = neighbors | (neighbor_mat_copy(:, truth_group(k)) > 0);
             end
-            neighbor_list = find(neighbors);
-            in_neighbors = segments.is_in(neighbor_list);
-            if isempty(in_neighbors)
+            
+            neighbor_mat_copy(neighbors,:) = false;
+            in_neighbors = segments.is_in & neighbors;
+            
+            neighbor_list = find(in_neighbors);
+            if isempty(neighbor_list)
                 break
             end
-            truth_group = [truth_group; in_neighbors];
+            truth_group = [truth_group; neighbor_list];
             
-            neighbor_mat_copy(neighbor_list,:) = false;
+            
         end
+        sample_results(n,3) = length(truth_group);
         
-        
+        attempt_counter = 0;
         escape_flag = true;
         while escape_flag
             %sample reiteration
             
+            attempt_counter = attempt_counter+1;
             
             seed_group = seed_pick;
             if is_test_file
@@ -111,19 +125,26 @@ function SLASH_training(varargin)
             segments = initial_segments;
             edge_data = initial_edge_data;
 
-            inner_escape_flag = true;
-            while inner_escape_flag
+            
+            all_inputs = zeros(C.max_net_inputs, num_features);
+            all_labels = zeros(C.max_net_inputs, 1);
+            input_counter = 0;
+            merge_counter = 0;
+            
+            while 1
                 %SLASH iteration
                 
                 neighbors = neighbor_mat_copy(:, seed_group(1));
                 neighbor_list = find(neighbors);
 
                 net_input = zeros(length(neighbor_list), num_features);
+                net_labels = zeros(length(neighbor_list), 1);
+                
                 
                 for k = 1:length(neighbor_list)
                     nk = neighbor_mat_copy(seed_pick, neighbor_list(k));
                     
-                    ms = edge_data.members;
+                    ms = edge_data.members(nk,:);
                     moment_vec = (segments.moments(ms(1), :) + ...
                         segments.moments(ms(2), :)) / ...
                         (segments.size(ms(1))+segments.size(ms(2)));
@@ -134,20 +155,32 @@ function SLASH_training(varargin)
                     net_input(k,:) = [edge_data.total(nk)/edge_data.count(nk), edge_data.max(nk), ...
                         edge_data.min(nk), edge_data.count(nk), ...
                         moment_vec];
+                    net_labels(k) = edge_data.is_correct(nk);
                 end
                     
-                net_output = run_nn(nn, net_input);
+                
+                all_inputs(input_counter + (1:length(net_labels)),:) = net_input;
+                all_labels(input_counter + (1:length(net_labels))) = net_labels;
+                input_counter = input_counter + length(net_labels);
+                
+                
+                net_output = run_nn(nn, net_input);                                                
                 [best_val, best_ind] = max(net_output);                
                 to_merge = neighbor_list(best_ind);
                 
                 if best_val < s.halt_threshold
-                    inner_escape_flag = false;
+                    sample_results(n,5) = 1;
+                    break
+                    
                 elseif ~segments.is_in(to_merge);
                     %wrong
+                    sample_results(n,5) = 0;
                     inner_escape_flag = false;
+                    
                 else
                     %right, merge segments
-                    
+                    merge_counter = merge_counter + 1;
+                
                     new_neighbors = neighbor_mat_copy(:, to_merge);
                     
                     shared_edges = new_neighbors>0 & neighbors>0;
@@ -169,8 +202,23 @@ function SLASH_training(varargin)
             end
             
             
+                        
+            %train network
+            for t = 1:s.max_training_iterations
+                [nn E] = train_nn(nn, all_inputs, all_labels*2-1);
+                if all(E < 1)
+                    break                    
+                end
+            end
+            
+            if merge_counter == length(truth_group) || attempt_counter > s.max_attempts
+                break
+            end
+            
         end
         
+        sample_results(n,4) = merge_counter;
+        sample_results(n,2) = attempt_counter;
     end
     
 end
