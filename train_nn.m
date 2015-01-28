@@ -10,7 +10,8 @@ function [nn, E] = train_nn(nn, data_block, labels)
     lambda(end) = lambda(end)*.1;
     
     for n = length(nn.W):-1:1
-        dEdB = dEdB .* (1-F{n+1}).^2;
+%         disp(sum(dEdB));
+        dEdB = dEdB .* (1-F{n+1}.^2);
 %         disp(sum(dEdB));
         dEdW = F{n}' * dEdB;
 

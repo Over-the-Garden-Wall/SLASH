@@ -1,8 +1,8 @@
 function dEdB = fin_diff_gradient(nn, data_block, labels)
 
-    delta = .001;
+    delta = .00001;
 
-    [out_block, F] = run_nn(nn, data_block);
+    out_block = run_nn(nn, data_block);
     
     E = (out_block - labels).^2;
     E = sum(E(:),1);
