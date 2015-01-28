@@ -4,14 +4,14 @@ function [nn, E] = train_nn(nn, data_block, labels)
     batch_size = size(data_block,1);
     
     E = (out_block - labels).^2;
-    dEdB = ones(batch_size, 1) * (out_block - labels);
+    dEdB = 2*(out_block - labels);
     
     lambda = ones(length(nn.W),1) * .01 / batch_size;
     lambda(end) = lambda(end)*.1;
     
     for n = length(nn.W):-1:1
         dEdB = dEdB .* (1-F{n+1}).^2;
-        
+%         disp(sum(dEdB));
         dEdW = F{n}' * dEdB;
 
         nn.B{n} = nn.B{n} - sum(dEdB)*lambda(n);
