@@ -71,6 +71,7 @@ function SLASH_training(varargin)
         sample_results(n,1) = is_test_file;
         
         load([C.training_dir training_fns{file_pick}]);
+        segments.moments = segments.moments(:,1:moment_length);
         initial_segments = segments;
         initial_edge_data = edge_data;
         
@@ -148,8 +149,8 @@ function SLASH_training(varargin)
                     moment_vec = (segments.moments(ms(1), :) + ...
                         segments.moments(ms(2), :)) / ...
                         (segments.size(ms(1))+segments.size(ms(2)));
-                    moment_vec = translate_vector(moment_vec, edge_data.com(nk,:), translation_rules);
-                    moment_vec = rotate_vector(moment_vec, rotation_rules);
+                    moment_vec = translate_vector(moment_vec', edge_data.com(nk,:), translation_rules)';
+                    moment_vec = rotate_vector(moment_vec', rotation_rules)';
                     
                     
                     net_input(k,:) = [edge_data.total(nk)/edge_data.count(nk), edge_data.max(nk), ...
@@ -205,7 +206,7 @@ function SLASH_training(varargin)
                         
             %train network
             for t = 1:s.max_training_iterations
-                [nn E] = train_nn(nn, all_inputs, all_labels*2-1);
+                [nn E] = train_nn(nn, all_inputs(1:input_counter,:), all_labels(1:input_counter)*2-1);
                 if all(E < 1)
                     break                    
                 end
