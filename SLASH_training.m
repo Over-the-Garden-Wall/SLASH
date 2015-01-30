@@ -193,9 +193,9 @@ function SLASH_training(varargin)
                     segments = merge_segments(segments, seed_pick, to_merge); %TODO
                     seed_group = [seed_group; to_merge];
                     
-                    neighbor_mat_copy(:, to_merge) = 0;
-                    neighbor_mat_copy(to_merge, shared_edges) = 0;
-                    neighbor_mat_copy(seed_pick, :) = neighbor_mat_copy(seed_pick, :) + neighbor_mat_copy(to_merge, :);
+                    neighbor_mat_copy(to_merge, :) = 0;
+                    neighbor_mat_copy(shared_edges, to_merge) = 0;
+                    neighbor_mat_copy(:, seed_pick) = neighbor_mat_copy(:, seed_pick) + neighbor_mat_copy(:, to_merge);
                 end
                     
                 
