@@ -15,9 +15,12 @@ function SLASH_training(varargin)
     ip.addParamValue('moment_depth', 2, @(x) isnumeric(x) && x<=C.moment_depth_generation);
     ip.addParamValue('save_frequency', 10, @(x) isnumeric(x));
     ip.addParamValue('lognormalize', true, @(x) islogical(x));
-    ip.addParamValue('net_size', [40 40 1], @(x) isnumeric(x));
+    ip.addParamValue('network_size', [40 40 1], @(x) isnumeric(x));
     ip.addParamValue('net', [], @(x) true);    
-    ip.addParamValue('max_training_iterations', 10000, @(x) isnumeric(x));    
+    ip.addParamValue('max_training_iterations', 1000, @(x) isnumeric(x));    
+    
+    if s.lognormalize
+        normal_f = @(x) sign(x).*log(1+abs(x))
     
        
     ip.parse(varargin{:});
@@ -28,10 +31,10 @@ function SLASH_training(varargin)
     moment_length = size(moment_coeffs,1);
     rotation_rules = find_moment_rotation_matrices(s.moment_depth);
     translation_rules = find_moment_translation_matrices(s.moment_depth);
-    
+    num_features = 4 + moment_length; 
     
     %get training data
-    dirs = C.training_dir;
+    dirs = dir(C.training_dir);
     is_valid_dir = false(length(dirs),1);
     training_fns = cell(length(dirs),1);
     
@@ -41,7 +44,7 @@ function SLASH_training(varargin)
             is_valid_dir(n) = true;
         end
     end
-    training_fns = sample_fns(is_valid_dir);
+    training_fns = training_fns(is_valid_dir);
     
     num_training_files = length(training_fns);    
     
@@ -65,12 +68,18 @@ function SLASH_training(varargin)
     
     
     for n = 1:s.num_samples
+        tic
+        
         %prep sample
         file_pick = ceil(rand*num_training_files);
         is_test_file = is_test(file_pick);
         sample_results(n,1) = is_test_file;
         
         load([C.training_dir training_fns{file_pick}]);
+        
+        disp(['beginning: ' training_fns{file_pick}])
+        
+        segments.moments = segments.moments(:,1:moment_length);
         initial_segments = segments;
         initial_edge_data = edge_data;
         
@@ -94,18 +103,21 @@ function SLASH_training(varargin)
         while 1
             neighbors = false(size(neighbor_mat,1),1);
             for k = 1:length(truth_group);
-                neighbors = neighbors | neighbor_mat_copy(:, truth_group(k));
+                neighbors = neighbors | (neighbor_mat_copy(:, truth_group(k)) > 0);
             end
-            neighbor_list = find(neighbors);
-            in_neighbors = segments.is_in(neighbor_list);
-            if isempty(in_neighbors)
+            
+            neighbor_mat_copy(neighbors,:) = false;
+            in_neighbors = segments.is_in & neighbors;
+            
+            neighbor_list = find(in_neighbors);
+            if isempty(neighbor_list)
                 break
             end
-            truth_group = [truth_group; in_neighbors];
+            truth_group = [truth_group; neighbor_list];
             
-            neighbor_mat_copy(neighbor_list,:) = false;
+            
         end
-        
+        sample_results(n,3) = length(truth_group);
         
         attempt_counter = 0;
         escape_flag = true;
@@ -123,12 +135,12 @@ function SLASH_training(varargin)
             edge_data = initial_edge_data;
 
             
-            all_inputs = zeros(C.max_inputs, num_features);
-            all_labels = zeros(C.max_inputs, 1);
+            all_inputs = zeros(C.max_net_inputs, num_features);
+            all_labels = zeros(C.max_net_inputs, 1);
             input_counter = 0;
+            merge_counter = 0;
             
-            inner_escape_flag = true;
-            while inner_escape_flag
+            while 1
                 %SLASH iteration
                 
                 neighbors = neighbor_mat_copy(:, seed_group(1));
@@ -145,8 +157,8 @@ function SLASH_training(varargin)
                     moment_vec = (segments.moments(ms(1), :) + ...
                         segments.moments(ms(2), :)) / ...
                         (segments.size(ms(1))+segments.size(ms(2)));
-                    moment_vec = translate_vector(moment_vec, edge_data.com(nk,:), translation_rules);
-                    moment_vec = rotate_vector(moment_vec, rotation_rules);
+                    moment_vec = translate_vector(moment_vec', edge_data.com(nk,:), translation_rules)';
+                    moment_vec = rotate_vector(moment_vec', rotation_rules)';
                     
                     
                     net_input(k,:) = [edge_data.total(nk)/edge_data.count(nk), edge_data.max(nk), ...
@@ -166,15 +178,18 @@ function SLASH_training(varargin)
                 to_merge = neighbor_list(best_ind);
                 
                 if best_val < s.halt_threshold
-                    inner_escape_flag = false;
                     sample_results(n,5) = 1;
+                    break
+                    
                 elseif ~segments.is_in(to_merge);
                     %wrong
-                    inner_escape_flag = false;
                     sample_results(n,5) = 0;
+                    inner_escape_flag = false;
+                    
                 else
                     %right, merge segments
-                    
+                    merge_counter = merge_counter + 1;
+                
                     new_neighbors = neighbor_mat_copy(:, to_merge);
                     
                     shared_edges = new_neighbors>0 & neighbors>0;
@@ -195,14 +210,27 @@ function SLASH_training(varargin)
                 
             end
             
+            toc;
+            disp('iteration over, training network');
+            tic
                         
             %train network
             for t = 1:s.max_training_iterations
-                
+                [nn E] = train_nn(nn, all_inputs(1:input_counter,:), all_labels(1:input_counter)*2-1);
+                if all(E < (1-s.halt_threshold)^2)
+                    break                    
+                end
+            end
             
+            toc
+            if merge_counter == length(truth_group)-1 || attempt_counter > s.max_attempts
+                break
+            end
             
         end
         
+        sample_results(n,4) = merge_counter;
+        sample_results(n,2) = attempt_counter;
     end
     
 end

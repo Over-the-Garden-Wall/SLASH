@@ -17,7 +17,7 @@ function SLASH_training(varargin)
     ip.addParamValue('lognormalize', true, @(x) islogical(x));
     ip.addParamValue('network_size', [40 40 1], @(x) isnumeric(x));
     ip.addParamValue('net', [], @(x) true);    
-    ip.addParamValue('max_training_iterations', Inf, @(x) isnumeric(x));    
+    ip.addParamValue('max_training_iterations', 1000, @(x) isnumeric(x));    
     
        
     ip.parse(varargin{:});
@@ -29,6 +29,14 @@ function SLASH_training(varargin)
     rotation_rules = find_moment_rotation_matrices(s.moment_depth);
     translation_rules = find_moment_translation_matrices(s.moment_depth);
     num_features = 4 + moment_length; 
+    
+    
+    if s.lognormalize
+        normal_f = @(x) sign(x).*log(1+abs(x));
+    else
+        normal_f = @(x) x;
+    end
+    
     
     %get training data
     dirs = dir(C.training_dir);
@@ -65,12 +73,17 @@ function SLASH_training(varargin)
     
     
     for n = 1:s.num_samples
+        tic
+        
         %prep sample
         file_pick = ceil(rand*num_training_files);
         is_test_file = is_test(file_pick);
         sample_results(n,1) = is_test_file;
         
         load([C.training_dir training_fns{file_pick}]);
+        
+        disp(['beginning: ' training_fns{file_pick}])
+        
         segments.moments = segments.moments(:,1:moment_length);
         initial_segments = segments;
         initial_edge_data = edge_data;
@@ -159,6 +172,8 @@ function SLASH_training(varargin)
                     net_labels(k) = edge_data.is_correct(nk);
                 end
                     
+                net_input(:,1:3) = net_input(:,1:3)-.5;
+                net_input(:,4:end) = normal_f(net_input(:,4:end));
                 
                 all_inputs(input_counter + (1:length(net_labels)),:) = net_input;
                 all_labels(input_counter + (1:length(net_labels))) = net_labels;
@@ -202,17 +217,22 @@ function SLASH_training(varargin)
                 
             end
             
+            toc;
+            disp('iteration over, training network');
+            tic
+                    
             
-                        
+            
             %train network
             for t = 1:s.max_training_iterations
                 [nn E] = train_nn(nn, all_inputs(1:input_counter,:), all_labels(1:input_counter)*2-1);
-                if all(E < 1)
+                if all(E < (1-s.halt_threshold)^2)
                     break                    
                 end
             end
             
-            if merge_counter == length(truth_group) || attempt_counter > s.max_attempts
+            toc
+            if merge_counter == length(truth_group)-1 || attempt_counter > s.max_attempts
                 break
             end
             
