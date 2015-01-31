@@ -209,7 +209,6 @@ function SLASH_training(varargin)
                     segments = merge_segments(segments, seed_pick, to_merge); %TODO
                     seed_group = [seed_group; to_merge];
                     
-                    disp(['merging: ' num2str(to_merge)]);
             
                     neighbor_mat_copy(to_merge, :) = 0;
                     neighbor_mat_copy(seed_pick, to_merge) = 0;
@@ -228,10 +227,12 @@ function SLASH_training(varargin)
             
             
             %train network
-            for t = 1:s.max_training_iterations
-                [nn E] = train_nn(nn, all_inputs(1:input_counter,:), all_labels(1:input_counter)*2-1);
-                if all(E < (1-s.halt_threshold)^2)
-                    break
+            if ~is_test_file
+                for t = 1:s.max_training_iterations
+                    [nn E] = train_nn(nn, all_inputs(1:input_counter,:), all_labels(1:input_counter)*2-1);
+                    if all(E < (1-s.halt_threshold)^2)
+                        break
+                    end
                 end
             end
             
