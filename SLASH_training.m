@@ -236,7 +236,7 @@ function SLASH_training(varargin)
             end
             
             toc
-            if merge_counter == length(truth_group)-1 || attempt_counter => s.max_attempts || size(all_inputs,1) > C.max_net_inputs
+            if merge_counter == length(truth_group)-1 || attempt_counter >= s.max_attempts || size(all_inputs,1) > C.max_net_inputs
                 disp(seed_group');
                 break
             end
