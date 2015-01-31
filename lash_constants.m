@@ -8,7 +8,7 @@ function C = lash_constants()
     C.training_dir = '../training_data/';
     
     C.moment_depth_generation = 5;
-    C.max_net_inputs = 10000;
+    C.max_net_inputs = 200000;
     
     C.translation_fxn_name = 'translate_moment';
 end

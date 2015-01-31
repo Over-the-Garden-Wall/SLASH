@@ -145,10 +145,10 @@ function SLASH_training(varargin)
             input_counter = 0;
             merge_counter = 0;
             
-            while 1
+            while size(all_inputs,1) <= C.max_net_inputs;
                 %SLASH iteration
                 
-                neighbors = neighbor_mat_copy(:, seed_group(1));
+                neighbors = neighbor_mat_copy(:, seed_pick);
                 neighbor_list = find(neighbors);
 
                 net_input = zeros(length(neighbor_list), num_features);
@@ -156,7 +156,7 @@ function SLASH_training(varargin)
                 
                 
                 for k = 1:length(neighbor_list)
-                    nk = neighbor_mat_copy(seed_pick, neighbor_list(k));
+                    nk = neighbor_mat_copy(neighbor_list(k), seed_pick);
                     
                     ms = edge_data.members(nk,:);
                     moment_vec = (segments.moments(ms(1), :) + ...
@@ -184,14 +184,14 @@ function SLASH_training(varargin)
                 [best_val, best_ind] = max(net_output);                
                 to_merge = neighbor_list(best_ind);
                 
-                if best_val < s.halt_threshold
+                if isempty(best_val) || best_val < s.halt_threshold
                     sample_results(n,5) = 1;
                     break
                     
                 elseif ~segments.is_in(to_merge);
                     %wrong
                     sample_results(n,5) = 0;
-                    inner_escape_flag = false;
+                    break
                     
                 else
                     %right, merge segments
@@ -209,16 +209,20 @@ function SLASH_training(varargin)
                     segments = merge_segments(segments, seed_pick, to_merge); %TODO
                     seed_group = [seed_group; to_merge];
                     
+                    disp(['merging: ' num2str(to_merge)]);
+            
                     neighbor_mat_copy(to_merge, :) = 0;
+                    neighbor_mat_copy(seed_pick, to_merge) = 0;
                     neighbor_mat_copy(shared_edges, to_merge) = 0;
                     neighbor_mat_copy(:, seed_pick) = neighbor_mat_copy(:, seed_pick) + neighbor_mat_copy(:, to_merge);
+                    edge_data.members(edge_data.members == to_merge) = seed_pick;
                 end
                     
                 
             end
             
             toc;
-            disp('iteration over, training network');
+            disp(['iteration over, training network on ' num2str(input_counter) ' states']);
             tic
                     
             
@@ -227,12 +231,13 @@ function SLASH_training(varargin)
             for t = 1:s.max_training_iterations
                 [nn E] = train_nn(nn, all_inputs(1:input_counter,:), all_labels(1:input_counter)*2-1);
                 if all(E < (1-s.halt_threshold)^2)
-                    break                    
+                    break
                 end
             end
             
             toc
-            if merge_counter == length(truth_group)-1 || attempt_counter > s.max_attempts
+            if merge_counter == length(truth_group)-1 || attempt_counter > s.max_attempts || size(all_inputs,1) > C.max_net_inputs
+                disp(seed_group');
                 break
             end
             
