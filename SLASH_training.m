@@ -10,7 +10,7 @@ function SLASH_training(varargin)
     ip.addParamValue('halt_threshold', .5, @(x) isnumeric(x));
     ip.addParamValue('learn_from_seen', true, @(x) islogical(x));
     ip.addParamValue('learning_rate', .01, @(x) isnumeric(x));
-    ip.addParamValue('max_attempts', Inf, @(x) isnumeric(x));    
+    ip.addParamValue('max_attempts', 5, @(x) isnumeric(x));    
     ip.addParamValue('test_fraction', .25, @(x) isnumeric(x));
     ip.addParamValue('moment_depth', 2, @(x) isnumeric(x) && x<=C.moment_depth_generation);
     ip.addParamValue('save_frequency', 10, @(x) isnumeric(x));
@@ -236,7 +236,7 @@ function SLASH_training(varargin)
             end
             
             toc
-            if merge_counter == length(truth_group)-1 || attempt_counter > s.max_attempts || size(all_inputs,1) > C.max_net_inputs
+            if merge_counter == length(truth_group)-1 || attempt_counter => s.max_attempts || size(all_inputs,1) > C.max_net_inputs
                 disp(seed_group');
                 break
             end
